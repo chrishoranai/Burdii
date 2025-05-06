@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -59,14 +60,7 @@ class HomeActivity : AppCompatActivity() {
 
         clearButton.setOnClickListener {
             // Show confirmation dialog before clearing
-            AlertDialog.Builder(this)
-                .setTitle("Clear Recent Rounds")
-                .setMessage("Are you sure you want to clear all recent rounds?")
-                .setPositiveButton("Clear") { _, _ ->
-                    clearHistory()
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
+            showConfirmationDialog()
         }
         
         upgradeButton.setOnClickListener {
@@ -100,6 +94,20 @@ class HomeActivity : AppCompatActivity() {
         }
     }
     // ------------------------------------------
+
+    private fun showConfirmationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Clear History")
+            .setMessage("Are you sure you want to clear all round history?")
+            .setPositiveButton("Yes") { dialog, which ->
+                clearHistory()
+            }
+            .setNegativeButton("No") { dialog, which ->
+                // Optionally, handle the "No" case, or just dismiss
+                dialog.dismiss()
+            }
+            .show()
+    }
 
     private fun clearHistory() {
         // Clear persistent storage
