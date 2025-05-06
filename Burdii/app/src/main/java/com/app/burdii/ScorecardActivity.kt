@@ -1,7 +1,9 @@
 package com.app.burdii
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
@@ -12,6 +14,7 @@ import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
@@ -19,6 +22,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.cardview.widget.CardView
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.text.SimpleDateFormat
 import java.util.*
 
 class ScorecardActivity : AppCompatActivity() {
@@ -28,6 +34,7 @@ class ScorecardActivity : AppCompatActivity() {
     private lateinit var voiceStatusCard: CardView
     private lateinit var voiceStatusTextView: TextView
     private lateinit var voiceInputButton: Button
+    private lateinit var finishRoundButton: Button
     private lateinit var textToSpeech: TextToSpeech
     private lateinit var speechRecognizer: SpeechRecognizer
     private val handler = Handler(Looper.getMainLooper())
@@ -44,11 +51,18 @@ class ScorecardActivity : AppCompatActivity() {
     private var isAskingForScore = false
     private lateinit var scoringMethod: String
 
+    // --- SharedPreferences Constants and Gson --- 
+    private val PREFS_FILENAME = "com.app.burdii.prefs"
+    private val ROUNDS_KEY = "rounds_history"
+    private val gson = Gson()
+    // ------------------------------------------
+
     private val REQUEST_RECORD_AUDIO_PERMISSION = 200
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scorecard)
+        Log.d("ScorecardActivity", "onCreate started")
 
         // Initialize UI components
         scorecardTable = findViewById(R.id.scorecardTable)
@@ -57,6 +71,7 @@ class ScorecardActivity : AppCompatActivity() {
         voiceStatusCard = findViewById(R.id.voiceStatusCard)
         voiceStatusTextView = findViewById(R.id.voiceStatusTextView)
         voiceInputButton = findViewById(R.id.voiceInputButton)
+        finishRoundButton = findViewById(R.id.finishRoundButton)
         micFeedbackCard.visibility = View.GONE
         voiceStatusCard.visibility = View.VISIBLE
         voiceStatusTextView.text = "Listening for 'Hey Birdie'"
@@ -79,9 +94,16 @@ class ScorecardActivity : AppCompatActivity() {
         // Initialize TextToSpeech
         textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
-                textToSpeech.language = Locale.US
+                val result = textToSpeech.setLanguage(Locale.US)
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Log.e("TTS_INIT", "The Language specified is not supported!")
+                    Toast.makeText(this, "TTS Language not supported.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Log.i("TTS_INIT", "TTS Engine Initialized Successfully.")
+                }
             } else {
-                Toast.makeText(this, "TextToSpeech initialization failed", Toast.LENGTH_SHORT).show()
+                Log.e("TTS_INIT", "TTS Initialization Failed! Status: $status")
+                Toast.makeText(this, "TTS Initialization Failed.", Toast.LENGTH_SHORT).show()
             }
         })
 
@@ -92,9 +114,12 @@ class ScorecardActivity : AppCompatActivity() {
         // Request permissions
         checkAndRequestPermissions()
 
-        // Setup button listener
+        // Setup button listeners
         voiceInputButton.setOnClickListener {
             switchToManualInput()
+        }
+        finishRoundButton.setOnClickListener {
+            finishRound()
         }
     }
 
@@ -126,69 +151,99 @@ class ScorecardActivity : AppCompatActivity() {
     private fun setupSpeechRecognizerListener() {
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
+                Log.d("SpeechRecognizer", "onReadyForSpeech")
                 micFeedbackCard.visibility = View.VISIBLE
             }
-            override fun onBeginningOfSpeech() {}
-            override fun onRmsChanged(rmsdB: Float) {}
-            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onBeginningOfSpeech() {
+                Log.d("SpeechRecognizer", "onBeginningOfSpeech")
+            }
+            override fun onRmsChanged(rmsdB: Float) { /* Log.v("SpeechRecognizer", "onRmsChanged: $rmsdB") */ }
+            override fun onBufferReceived(buffer: ByteArray?) { Log.d("SpeechRecognizer", "onBufferReceived") }
             override fun onEndOfSpeech() {
+                Log.d("SpeechRecognizer", "onEndOfSpeech")
                 micFeedbackCard.visibility = View.GONE
             }
+
             override fun onError(error: Int) {
+                val errorMessage = when (error) {
+                    SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
+                    SpeechRecognizer.ERROR_CLIENT -> "Client side error"
+                    SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Insufficient permissions"
+                    SpeechRecognizer.ERROR_NETWORK -> "Network error"
+                    SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
+                    SpeechRecognizer.ERROR_NO_MATCH -> "No match"
+                    SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer busy"
+                    SpeechRecognizer.ERROR_SERVER -> "Error from server"
+                    SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech input"
+                    else -> "Unknown speech recognizer error"
+                }
+                Log.e("SpeechRecognizer", "onError: $error - $errorMessage")
                 micFeedbackCard.visibility = View.GONE
-                // Avoid infinite loops on continuous errors
-                if (error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
-                    if (isListeningForWakeWord) {
-                        handler.postDelayed({ startListeningForWakeWord() }, 500)
-                    } else if (isAskingForScore) {
-                        textToSpeech.speak("Sorry, I didn't catch that. Please say the score again.", TextToSpeech.QUEUE_FLUSH, null, null)
-                        handler.postDelayed({ startListeningForScore() }, 1500)
-                    }
-                } else {
-                    // Handle other errors (log, show message, etc.)
-                    Toast.makeText(this@ScorecardActivity, "Speech Recognizer Error: $error", Toast.LENGTH_SHORT).show()
-                    // Maybe try restarting wake word listening after a longer delay or stop trying?
-                    if (isListeningForWakeWord) {
-                        handler.postDelayed({ startListeningForWakeWord() }, 2000)
-                    }
+                voiceStatusTextView.text = "Error: $errorMessage. Tap to retry or use manual input."
+                voiceInputButton.text = "Retry Voice"
+                // Reset state or provide retry mechanism
+                if (isListeningForWakeWord || isAskingForScore) {
+                    // Potentially delay and restart listening, or switch to manual
+                    // For now, just log and update UI
+                    handler.postDelayed({ resetVoiceInputUIState() }, 3000) // Reset after a delay
                 }
             }
+
             override fun onResults(results: Bundle?) {
-                micFeedbackCard.visibility = View.GONE
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                if (matches != null && matches.isNotEmpty()) {
-                    val spokenText = matches[0].lowercase()
+                Log.d("SpeechRecognizer", "onResults: ${matches?.joinToString()}")
+                micFeedbackCard.visibility = View.GONE
+                if (!matches.isNullOrEmpty()) {
+                    val spokenText = matches[0].lowercase(Locale.getDefault())
+                    Log.i("SpeechRecognizer", "Spoken text: $spokenText")
                     if (isListeningForWakeWord && spokenText.contains("hey birdie")) {
+                        Log.i("SpeechRecognizer", "Wake word detected!")
                         isListeningForWakeWord = false
-                        isAskingForScore = false
-                        micFeedbackCard.visibility = View.GONE
+                        isAskingForScore = true // Transition to asking for score
                         startScoreInputForHole(currentHole)
                     } else if (isAskingForScore) {
+                        Log.i("SpeechRecognizer", "Score input received: $spokenText")
                         val score = parseScore(spokenText)
                         if (score != null) {
-                            scores[currentPlayerIndex][currentHole - 1] = score
-                            scoreEditTexts[currentPlayerIndex][currentHole - 1].setText(score.toString())
+                            val holeIndex = currentHole - 1
+                            scores[currentPlayerIndex][holeIndex] = score
+                            scoreEditTexts[currentPlayerIndex][holeIndex].setText(score.toString())
                             updateTotalScore(currentPlayerIndex)
                             currentPlayerIndex++
-                            isAskingForScore = false
-                            handler.postDelayed({ askForScore() }, 500)
+                            if (currentPlayerIndex < numPlayers) {
+                                askForScore() // Ask for next player's score
+                            } else {
+                                // All players have entered scores for the current hole
+                                currentPlayerIndex = 0 // Reset for next hole
+                                currentHole++
+                                if (currentHole <= numHoles) {
+                                    currentHoleTextView.text = "Hole $currentHole / $numHoles"
+                                    startScoreInputForHole(currentHole) // Start next hole
+                                } else {
+                                    Toast.makeText(this@ScorecardActivity, "End of round!", Toast.LENGTH_LONG).show()
+                                    // Optionally, trigger finishRound() or navigate away
+                                    switchToManualInput() // Or some other end-of-round state
+                                }
+                            }
                         } else {
-                            textToSpeech.speak("Sorry, that wasn't a valid score. Please try again.", TextToSpeech.QUEUE_FLUSH, null, null)
-                            handler.postDelayed({ startListeningForScore() }, 1500)
+                            textToSpeech.speak("Sorry, I didn't catch that score. Please try again.", TextToSpeech.QUEUE_FLUSH, null, "RETRY_SCORE")
+                            handler.postDelayed({ startListeningForScore() }, 1000) // Retry listening for score
                         }
                     }
                 } else {
-                    // No matches, restart listening if appropriate
-                    if (isListeningForWakeWord) {
-                        startListeningForWakeWord()
-                    } else if (isAskingForScore) {
-                        textToSpeech.speak("Didn't get that. Please say the score.", TextToSpeech.QUEUE_FLUSH, null, null)
-                        handler.postDelayed({ startListeningForScore() }, 1500)
+                    Log.w("SpeechRecognizer", "No matches found in onResults")
+                    // If expecting something, might need to re-prompt or retry
+                    if (isAskingForScore) {
+                        textToSpeech.speak("I didn't hear a score. Please try again.", TextToSpeech.QUEUE_FLUSH, null, "NO_SCORE_HEARD")
+                        handler.postDelayed({ startListeningForScore() }, 1000)
+                    } else if (isListeningForWakeWord) {
+                         handler.postDelayed({ startListeningForWakeWord() }, 500) // Briefly wait and restart wake word
                     }
                 }
             }
-            override fun onPartialResults(partialResults: Bundle?) {}
-            override fun onEvent(eventType: Int, params: Bundle?) {}
+
+            override fun onPartialResults(partialResults: Bundle?) { Log.d("SpeechRecognizer", "onPartialResults") }
+            override fun onEvent(eventType: Int, params: Bundle?) { Log.d("SpeechRecognizer", "onEvent") }
         })
     }
 
@@ -237,9 +292,29 @@ class ScorecardActivity : AppCompatActivity() {
         }
     }
 
+    // Resets the voice input UI elements to their default state
+    private fun resetVoiceInputUIState() {
+        voiceStatusTextView.text = "Listening for 'Hey Birdie'" // Or some default
+        voiceStatusCard.visibility = View.VISIBLE // Or GONE, depending on default
+        micFeedbackCard.visibility = View.GONE
+        voiceInputButton.text = "Voice Input" // Or your default text
+        // isListeningForWakeWord = true // Or false, reset as needed
+        // isAskingForScore = false // Reset as needed
+        // Make EditTexts focusable again if needed for manual input fallback
+        setManualInputEnabled(true)
+    }
+
     // Starts listening for the wake word "Hey Birdie"
     private fun startListeningForWakeWord() {
+        Log.i("VoiceInput", "Attempting to start listening for WAKE WORD.")
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+                Toast.makeText(this, "Speech recognition is not available on this device.", Toast.LENGTH_LONG).show()
+                Log.e("SpeechRecognizer", "Speech recognition service not available.")
+                resetVoiceInputUIState() // Ensure UI is reset
+                return
+            }
+
             isListeningForWakeWord = true
             isAskingForScore = false // Ensure correct state
             // Make EditTexts non-focusable when listening for wake word
@@ -249,6 +324,7 @@ class ScorecardActivity : AppCompatActivity() {
             val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+            intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true) // Prefer offline recognition
             speechRecognizer.startListening(intent)
         }
     }
@@ -257,6 +333,8 @@ class ScorecardActivity : AppCompatActivity() {
     private fun startScoreInputForHole(hole: Int) {
         currentHole = hole
         currentPlayerIndex = 0
+        Log.i("VoiceInput", "Starting score input for Hole $currentHole")
+        currentHoleTextView.text = "Hole $currentHole / $numHoles"
         askForScore()
     }
 
@@ -264,34 +342,41 @@ class ScorecardActivity : AppCompatActivity() {
     private fun askForScore() {
         if (currentPlayerIndex < numPlayers) {
             val playerName = playerNames[currentPlayerIndex]
-            val prompt = "Tell me the score for $playerName on Hole $currentHole"
-            textToSpeech.speak(prompt, TextToSpeech.QUEUE_FLUSH, null, null)
+            val message = "What's the score for $playerName on hole $currentHole?"
+            Log.i("TTS_SPEAK", "Attempting to speak: '$message'")
+            voiceStatusTextView.text = "Speaking: $message"
+            textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, "ASK_SCORE_${playerName}_H${currentHole}")
+            // Wait for TTS to finish before listening for score
+            // A more robust way is to use UtteranceProgressListener
             handler.postDelayed({
-                isAskingForScore = true
-                startListeningForScore()
-            }, 1500)
+                if (scoringMethod == "VOICE") { // Only listen if in voice mode
+                    startListeningForScore()
+                }
+            }, 2000) // Adjust delay as needed for speech length
         } else {
-            currentHole++
-            if (currentHole <= numHoles) {
-                currentHoleTextView.text = "Current Hole: $currentHole"
-                isListeningForWakeWord = true
-                startListeningForWakeWord()
-            } else {
-                textToSpeech.speak("Game Finished", TextToSpeech.QUEUE_FLUSH, null, null)
-                Toast.makeText(this, "Game Finished", Toast.LENGTH_SHORT).show()
-            }
+            Log.i("VoiceInput", "All players scored for hole $currentHole. Moving to next or finishing.")
+            // This case should be handled in onResults after the last player's score for a hole
         }
     }
 
     // Starts listening for the score input
     private fun startListeningForScore() {
+        Log.i("VoiceInput", "Attempting to start listening for SCORE.")
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+                Toast.makeText(this, "Speech recognition is not available on this device.", Toast.LENGTH_LONG).show()
+                Log.e("SpeechRecognizer", "Speech recognition service not available.")
+                resetVoiceInputUIState() // Ensure UI is reset
+                return
+            }
+
             isAskingForScore = true
             isListeningForWakeWord = false
             voiceStatusCard.visibility = View.VISIBLE
             voiceStatusTextView.text = "Listening for score..."
             val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true) // Prefer offline recognition
             speechRecognizer.startListening(intent)
         } else {
             Toast.makeText(this, "Audio permission needed for voice input.", Toast.LENGTH_SHORT).show()
@@ -371,6 +456,73 @@ class ScorecardActivity : AppCompatActivity() {
             }
         }
     }
+
+    // --- Finish Round Logic --- 
+    private fun finishRound() {
+        // 1. Calculate total score and par
+        var totalPlayerScore = 0
+        // For simplicity, we'll just use the first player's score for the summary.
+        // A more complex app might show all scores or the best score.
+        if (numPlayers > 0) { 
+            totalPlayerScore = scores[0].sum()
+        }
+        val totalPar = parValues.sum()
+        val scoreDifference = totalPlayerScore - totalPar
+
+        // 2. Format score change string
+        val scoreChangeStr = when {
+            scoreDifference > 0 -> "+${scoreDifference}"
+            scoreDifference == 0 -> "E"
+            else -> scoreDifference.toString() // Negative sign is included
+        }
+
+        // 3. Get current date
+        val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        val currentDate = sdf.format(Date())
+
+        // 4. Create Round object
+        val completedRound = Round(
+            date = currentDate,
+            scoreChange = scoreChangeStr,
+            holesPlayed = "${numHoles} Holes"
+        )
+
+        // 5. Load, add, and save rounds
+        val currentRounds = loadRounds().toMutableList()
+        currentRounds.add(0, completedRound) // Add to the beginning of the list
+        saveRounds(currentRounds)
+
+        // 6. Show confirmation and finish
+        Toast.makeText(this, "Round Finished and Saved!", Toast.LENGTH_LONG).show()
+        finish() // Closes ScorecardActivity and returns to HomeActivity
+    }
+    // ------------------------
+
+    // --- SharedPreferences Helper Functions --- 
+    private fun saveRounds(rounds: List<Round>) {
+        val prefs: SharedPreferences = getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        val json = gson.toJson(rounds)
+        editor.putString(ROUNDS_KEY, json)
+        editor.apply()
+    }
+    
+    private fun loadRounds(): List<Round> {
+        val prefs: SharedPreferences = getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
+        val json = prefs.getString(ROUNDS_KEY, null)
+        return if (json != null) {
+            val type = object : TypeToken<List<Round>>() {}.type
+            try {
+                gson.fromJson(json, type)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                listOf()
+            }
+        } else {
+            listOf()
+        }
+    }
+    // -----------------------------------------------------------------
 
     // Cleanup resources
     override fun onDestroy() {

@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import android.widget.ImageView
-import android.widget.TextView
 
 /**
  * SplashActivity - Entry point for the Burdii disc golf scorekeeping app
@@ -18,12 +16,6 @@ class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
-        
-        // Set up animation for logo and title if needed
-        val logoImageView = findViewById<ImageView>(R.id.splashLogoImageView)
-        val titleTextView = findViewById<TextView>(R.id.splashTitleTextView)
-        
-        // Simple animation: fade in or scale up could be added here
         
         // Delayed transition to HomeActivity
         Handler(Looper.getMainLooper()).postDelayed({

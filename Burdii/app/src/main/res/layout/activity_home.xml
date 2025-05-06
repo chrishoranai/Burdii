@@ -14,7 +14,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:contentDescription="@string/app_logo"
-        android:src="@drawable/ic_disc_golf"
+        android:src="@drawable/ic_mic"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

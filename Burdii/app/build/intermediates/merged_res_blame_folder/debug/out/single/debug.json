@@ -24,10 +24,6 @@
         "source": "com.app.burdii.app-main-33:/layout/item_round.xml"
     },
     {
-        "merged": "com.app.burdii.app-merged_res-31:/drawable_ic_disc_golf.xml.flat",
-        "source": "com.app.burdii.app-main-33:/drawable/ic_disc_golf.xml"
-    },
-    {
         "merged": "com.app.burdii.app-merged_res-31:/drawable_ic_add.xml.flat",
         "source": "com.app.burdii.app-main-33:/drawable/ic_add.xml"
     },

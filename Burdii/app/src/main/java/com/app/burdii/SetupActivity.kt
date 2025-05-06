@@ -112,12 +112,15 @@ class SetupActivity : AppCompatActivity() {
      * Starts the scorecard activity with all configured settings
      */
     private fun startGame() {
-        val numHoles = numHolesEditText.text.toString().toInt()
-        val numPlayers = numPlayersEditText.text.toString().toInt()
-        val useVoiceInput = voiceInputRadioButton.isChecked
+        val numHolesStr = numHolesEditText.text.toString()
         
+        // Should be safe to assume numHoles/numPlayers are parsed correctly
+        // based on validateInputs() passing before this is called.
+        val numHoles = numHolesStr.toInt()
+
         val intent = Intent(this, ScorecardActivity::class.java).apply {
             putExtra("NUM_HOLES", numHoles)
+            putExtra("NUM_PLAYERS", numPlayersEditText.text.toString().toInt())
             putExtra("PLAYER_NAMES", playerNames)
             
             // Ensure parValues is initialized before passing (it might not be if 'Set Pars' wasn't clicked)
@@ -222,8 +225,8 @@ class SetupActivity : AppCompatActivity() {
             .setView(scrollView)
             .setPositiveButton("OK") { _, _ ->
                 // Explicitly use 'this' to refer to the class member
-                this.playerNames = inputLayouts.map { pair -> 
-                    val (layout, editText) = pair
+                this.playerNames = inputLayouts.map { pair ->
+                    val (_, editText) = pair
                     editText.text.toString().ifEmpty { "Player ${inputLayouts.indexOf(pair) + 1}" } 
                 }.toTypedArray()
                 

@@ -16,12 +16,12 @@ color textSecondary
 color white
 drawable gradient_background
 drawable ic_add
-drawable ic_disc_golf
 drawable ic_mic
 id clearButton
 id courseInfoCard
 id currentHoleTextView
 id dateTextView
+id finishRoundButton
 id headerCard
 id holesTextView
 id inputMethodRadioGroup
