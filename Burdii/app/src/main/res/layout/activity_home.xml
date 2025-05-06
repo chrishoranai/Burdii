@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/gradient_background"
+    android:padding="16dp">
+
+    <!-- Title and Logo -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Burdi"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="#388E3C" />
+
+        <ImageView
+            android:id="@+id/logoImageView"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/logo" />
+    </LinearLayout>
+
+    <!-- Tagline -->
+    <TextView
+        android:id="@+id/taglineTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Handfree score keeping, so you can focus on your game, not your phone."
+        android:textSize="16sp"
+        android:textColor="#000000"
+        android:layout_marginTop="8dp" />
+
+    <!-- Start New Round Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/startNewRoundButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="+ Start New Round"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#4CAF50"
+        android:layout_marginTop="16dp" />
+
+    <!-- Recent Rounds Title -->
+    <TextView
+        android:id="@+id/recentRoundsTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recent Rounds"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:layout_marginTop="16dp" />
+
+    <!-- Recent Rounds List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recentRoundsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp" />
+
+    <!-- Clear Button -->
+    <Button
+        android:id="@+id/clearButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear Recent Rounds"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>
