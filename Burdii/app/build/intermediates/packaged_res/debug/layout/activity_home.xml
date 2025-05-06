@@ -14,7 +14,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:contentDescription="@string/app_logo"
-        android:src="@drawable/ic_mic"
+        android:src="@drawable/ic_bird"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -22,19 +22,21 @@
         android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="24dp"
         android:text="@string/app_name"
         android:textColor="@color/colorPrimary"
-        android:textSize="36sp"
+        android:textSize="48sp"
         android:textStyle="bold"
+        android:includeFontPadding="false"
         app:layout_constraintStart_toEndOf="@+id/logoImageView"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/logoImageView"
+        app:layout_constraintBottom_toBottomOf="@+id/logoImageView" />
 
     <TextView
         android:id="@+id/taglineTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="12dp"
         android:text="@string/app_tagline"
         android:textColor="@color/textSecondary"
         android:textSize="14sp"
@@ -76,7 +78,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="#FAFAFA"
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
         app:layout_constraintBottom_toTopOf="@+id/clearButton"
@@ -101,8 +103,21 @@
         android:layout_height="wrap_content"
         android:text="@string/clear_history"
         android:textColor="@color/textSecondary"
+        app:layout_constraintBottom_toTopOf="@+id/upgradeButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Upgrade to Pro Button -->
+    <Button
+        android:id="@+id/upgradeButton"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/upgrade_button"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

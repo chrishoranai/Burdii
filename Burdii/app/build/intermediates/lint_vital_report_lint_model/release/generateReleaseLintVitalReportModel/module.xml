@@ -1,0 +1,19 @@
+<lint-module
+    format="1"
+    dir="/home/christianhoran/Desktop/Burdii/Burdii/Burdii/app"
+    name=":app"
+    type="APP"
+    maven="Burdii:app:"
+    agpVersion="8.2.0"
+    buildFolder="build"
+    bootClassPath="/home/christianhoran/Android/Sdk/platforms/android-36/android.jar:/home/christianhoran/Android/Sdk/build-tools/34.0.0/core-lambda-stubs.jar"
+    javaSourceLevel="17"
+    compileTarget="android-36"
+    neverShrinking="true">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="release"/>
+</lint-module>

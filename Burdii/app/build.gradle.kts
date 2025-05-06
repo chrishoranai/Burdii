@@ -44,4 +44,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.google.gson)
+    implementation("com.android.billingclient:billing:6.0.1")
 }

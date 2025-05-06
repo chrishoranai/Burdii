@@ -83,6 +83,16 @@ class ScorecardActivity : AppCompatActivity() {
         parValues = intent.getIntArrayExtra("PAR_VALUES") ?: IntArray(numHoles) { 3 } // Default par 3 if not found
         scoringMethod = intent.getStringExtra("SCORING_METHOD") ?: "MANUAL" // Default to MANUAL
 
+        // Check if voice feature is actually unlocked
+        if (scoringMethod == "VOICE") {
+            val prefs = getSharedPreferences("com.app.burdii.prefs", MODE_PRIVATE)
+            val unlocked = prefs.getBoolean("VOICE_UNLOCKED", false)
+            if (!unlocked) {
+                Toast.makeText(this, "Voice feature not unlocked. Switching to manual input.", Toast.LENGTH_LONG).show()
+                scoringMethod = "MANUAL"
+            }
+        }
+
         // Initialize scores and UI arrays
         scores = Array(numPlayers) { IntArray(numHoles) }
         scoreEditTexts = Array(numPlayers) { Array(numHoles) { EditText(this) } }
@@ -197,6 +207,13 @@ class ScorecardActivity : AppCompatActivity() {
                     val spokenText = matches[0].lowercase(Locale.getDefault())
                     Log.i("SpeechRecognizer", "Spoken text: $spokenText")
                     if (isListeningForWakeWord && spokenText.contains("hey birdie")) {
+                        // Handle quick score queries
+                        if (spokenText.contains("tell me the scores") || spokenText.contains("who is winning")) {
+                            speakScoresSummary()
+                            // After speaking, restart listening for wake word
+                            handler.postDelayed({ startListeningForWakeWord() }, 2500)
+                            return
+                        }
                         Log.i("SpeechRecognizer", "Wake word detected!")
                         isListeningForWakeWord = false
                         isAskingForScore = true // Transition to asking for score
@@ -298,8 +315,9 @@ class ScorecardActivity : AppCompatActivity() {
         voiceStatusCard.visibility = View.VISIBLE // Or GONE, depending on default
         micFeedbackCard.visibility = View.GONE
         voiceInputButton.text = "Voice Input" // Or your default text
-        // isListeningForWakeWord = true // Or false, reset as needed
-        // isAskingForScore = false // Reset as needed
+        // Ensure flags are reset so recognizer restarts correctly
+        isListeningForWakeWord = true
+        isAskingForScore = false
         // Make EditTexts focusable again if needed for manual input fallback
         setManualInputEnabled(true)
     }
@@ -409,6 +427,35 @@ class ScorecardActivity : AppCompatActivity() {
     private fun updateTotalScore(playerIndex: Int) {
         val total = scores[playerIndex].sum()
         totalTextViews[playerIndex].text = total.toString()
+        saveCurrentScores()
+    }
+
+    // Saves current per-player totals so a background component could read them later
+    private fun saveCurrentScores() {
+        val prefs: SharedPreferences = getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        val totals = (0 until numPlayers).map { scores[it].sum() }
+        editor.putString("CURRENT_PLAYER_NAMES", gson.toJson(playerNames))
+        editor.putString("CURRENT_TOTAL_SCORES", gson.toJson(totals))
+        editor.apply()
+    }
+
+    // Speaks a summary of the current scores or the leader if requested
+    private fun speakScoresSummary() {
+        // Compute totals for each player
+        val totals = IntArray(numPlayers) { scores[it].sum() }
+        // Build spoken message
+        val builder = StringBuilder()
+        var leaderIndex = 0
+        for (i in totals.indices) {
+            builder.append("${playerNames[i]} has ${totals[i]}.")
+            if (totals[i] < totals[leaderIndex]) leaderIndex = i
+            if (i != totals.lastIndex) builder.append(" ")
+        }
+        builder.append(" ${playerNames[leaderIndex]} is currently leading.")
+        val message = builder.toString()
+        voiceStatusTextView.text = message
+        textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, null, "SCORES_SUMMARY")
     }
 
     // Switch to manual input mode
@@ -536,12 +583,14 @@ class ScorecardActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        speechRecognizer.stopListening()
-        textToSpeech.stop() // Stop any ongoing TTS
-        micFeedbackCard.visibility = View.GONE // Hide feedback
-        voiceStatusCard.visibility = View.GONE // Hide status card
-        isListeningForWakeWord = false // Reset state flags if needed
-        isAskingForScore = false
+        if (scoringMethod != "VOICE") {
+            speechRecognizer.stopListening()
+            textToSpeech.stop() // Stop any ongoing TTS
+            micFeedbackCard.visibility = View.GONE // Hide feedback
+            voiceStatusCard.visibility = View.GONE // Hide status card
+            isListeningForWakeWord = false // Reset state flags if needed
+            isAskingForScore = false
+        }
         handler.removeCallbacksAndMessages(null)
     }
 

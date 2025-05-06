@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Base solid color (primary app color) -->
+    <item>
+        <color android:color="@color/colorPrimary" />
+    </item>
+    
+    <!-- Grass-like pattern overlay -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="90"
+                android:startColor="#80559E2F" 
+                android:centerColor="#80407929"
+                android:endColor="#707EC73C" />
+            
+            <!-- Add line pattern to simulate grass -->
+            <stroke
+                android:width="2dp"
+                android:color="#40000000"
+                android:dashWidth="8dp"
+                android:dashGap="4dp" />
+        </shape>
+    </item>
+    
+    <!-- Additional texture layer -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="400dp"
+                android:centerX="0.5"
+                android:centerY="0.5"
+                android:startColor="#00FFFFFF"
+                android:endColor="#404CAF50" />
+        </shape>
+    </item>
+</layer-list>

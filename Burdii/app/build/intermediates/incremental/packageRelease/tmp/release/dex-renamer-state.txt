@@ -1,0 +1,4 @@
+#Tue May 06 13:24:49 CDT 2025
+base.0=/home/christianhoran/Desktop/Burdii/Burdii/Burdii/app/build/intermediates/dex/release/mergeDexRelease/classes.dex
+path.0=classes.dex
+renamed.0=classes.dex

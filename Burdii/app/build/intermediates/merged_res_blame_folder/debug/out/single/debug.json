@@ -4,12 +4,44 @@
         "source": "com.app.burdii.app-main-33:/drawable/gradient_background.xml"
     },
     {
-        "merged": "com.app.burdii.app-merged_res-31:/layout_activity_home.xml.flat",
-        "source": "com.app.burdii.app-main-33:/layout/activity_home.xml"
-    },
-    {
         "merged": "com.app.burdii.app-merged_res-31:/xml_data_extraction_rules.xml.flat",
         "source": "com.app.burdii.app-main-33:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/layout_dialog_upgrade.xml.flat",
+        "source": "com.app.burdii.app-main-33:/layout/dialog_upgrade.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/anim_fade_out.xml.flat",
+        "source": "com.app.burdii.app-main-33:/anim/fade_out.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/drawable_grass_background.xml.flat",
+        "source": "com.app.burdii.app-main-33:/drawable/grass_background.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/layout_activity_setup.xml.flat",
+        "source": "com.app.burdii.app-main-33:/layout/activity_setup.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/layout_activity_splash.xml.flat",
+        "source": "com.app.burdii.app-main-33:/layout/activity_splash.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/drawable_ic_add.xml.flat",
+        "source": "com.app.burdii.app-main-33:/drawable/ic_add.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/drawable_splash_background.xml.flat",
+        "source": "com.app.burdii.app-main-33:/drawable/splash_background.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/drawable_ic_bird.xml.flat",
+        "source": "com.app.burdii.app-main-33:/drawable/ic_bird.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/layout_activity_home.xml.flat",
+        "source": "com.app.burdii.app-main-33:/layout/activity_home.xml"
     },
     {
         "merged": "com.app.burdii.app-merged_res-31:/drawable_ic_mic.xml.flat",
@@ -24,19 +56,15 @@
         "source": "com.app.burdii.app-main-33:/layout/item_round.xml"
     },
     {
-        "merged": "com.app.burdii.app-merged_res-31:/drawable_ic_add.xml.flat",
-        "source": "com.app.burdii.app-main-33:/drawable/ic_add.xml"
-    },
-    {
-        "merged": "com.app.burdii.app-merged_res-31:/layout_activity_splash.xml.flat",
-        "source": "com.app.burdii.app-main-33:/layout/activity_splash.xml"
-    },
-    {
-        "merged": "com.app.burdii.app-merged_res-31:/layout_activity_setup.xml.flat",
-        "source": "com.app.burdii.app-main-33:/layout/activity_setup.xml"
+        "merged": "com.app.burdii.app-merged_res-31:/anim_fade_in.xml.flat",
+        "source": "com.app.burdii.app-main-33:/anim/fade_in.xml"
     },
     {
         "merged": "com.app.burdii.app-merged_res-31:/layout_activity_scorecard.xml.flat",
         "source": "com.app.burdii.app-main-33:/layout/activity_scorecard.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/drawable_ic_grass.jpg.flat",
+        "source": "com.app.burdii.app-main-33:/drawable/ic_grass.jpg"
     }
 ]

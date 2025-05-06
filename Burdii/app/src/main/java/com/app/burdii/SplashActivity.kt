@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
  * Displays the app logo and transitions to the HomeActivity after a short delay
  */
 class SplashActivity : AppCompatActivity() {
-    private val SPLASH_DELAY = 2000L // 2 seconds delay
+    private val SPLASH_DELAY = 4000L // 4 seconds delay
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,6 +22,8 @@ class SplashActivity : AppCompatActivity() {
             val intent = Intent(this, HomeActivity::class.java)
             startActivity(intent)
             finish() // Close SplashActivity so it's not kept in the back stack
+            // Apply fade in/out animation transition
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         }, SPLASH_DELAY)
     }
 }

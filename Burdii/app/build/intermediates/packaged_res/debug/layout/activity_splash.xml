@@ -8,10 +8,22 @@
     tools:context=".SplashActivity">
 
     <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_grass"
+        android:scaleType="centerCrop"
+        android:alpha="0.3"
+        android:contentDescription="@string/app_logo"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
         android:id="@+id/splashLogoImageView"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:src="@drawable/ic_mic"
+        android:src="@drawable/ic_bird"
         android:contentDescription="@string/app_logo"
         app:layout_constraintBottom_toTopOf="@+id/splashTitleTextView"
         app:layout_constraintEnd_toEndOf="parent"
@@ -38,6 +50,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
         android:text="@string/app_tagline"
         android:textColor="@android:color/white"
         android:textSize="16sp"

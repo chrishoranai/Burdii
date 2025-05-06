@@ -1,0 +1,854 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.2.0" type="incidents">
+
+    <incident
+        id="VectorPath"
+        severity="warning"
+        message="Very long vector path (1735 characters), which is bad for performance. Considering reducing precision, removing minor details or rasterizing vector.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/drawable/ic_bird.xml"
+            line="9"
+            column="27"
+            startOffset="303"
+            endLine="9"
+            endColumn="1762"
+            endOffset="2038"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;Say &apos;Hey Birdie&apos; when you&apos;re ready to input scores for this hole&quot;, should use `@string` resource">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_scorecard.xml"
+            line="44"
+            column="17"
+            startOffset="1833"
+            endLine="44"
+            endColumn="96"
+            endOffset="1912"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;Input Scores Manually&quot;, should use `@string` resource">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_scorecard.xml"
+            line="56"
+            column="17"
+            startOffset="2495"
+            endLine="56"
+            endColumn="53"
+            endOffset="2531"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;Listening for &apos;Hey Birdie&apos;&quot;, should use `@string` resource">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_scorecard.xml"
+            line="85"
+            column="13"
+            startOffset="3694"
+            endLine="85"
+            endColumn="54"
+            endOffset="3735"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;Finish Round&quot;, should use `@string` resource">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_scorecard.xml"
+            line="128"
+            column="9"
+            startOffset="5328"
+            endLine="128"
+            endColumn="36"
+            endOffset="5355"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;Listening&quot;, should use `@string` resource">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_scorecard.xml"
+            line="152"
+            column="13"
+            startOffset="6307"
+            endLine="152"
+            endColumn="51"
+            endOffset="6345"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;18&quot;, should use `@string` resource">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_setup.xml"
+            line="57"
+            column="25"
+            startOffset="2493"
+            endLine="57"
+            endColumn="42"
+            endOffset="2510"/>
+    </incident>
+
+    <incident
+        id="HardcodedText"
+        severity="warning"
+        message="Hardcoded string &quot;1&quot;, should use `@string` resource">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_setup.xml"
+            line="73"
+            column="25"
+            startOffset="3323"
+            endLine="73"
+            endColumn="41"
+            endOffset="3339"/>
+    </incident>
+
+    <incident
+        id="ContentDescription"
+        severity="warning"
+        message="Missing `contentDescription` attribute on image">
+        <fix-alternatives>
+            <fix-attribute
+                description="Set contentDescription"
+                namespace="http://schemas.android.com/apk/res/android"
+                attribute="contentDescription"
+                value="TODO"
+                dot="4"
+                mark="0"/>
+            <fix-attribute
+                description="Set importantForAccessibility=&quot;no&quot;"
+                namespace="http://schemas.android.com/apk/res/android"
+                attribute="importantForAccessibility"
+                value="no"/>
+        </fix-alternatives>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/dialog_upgrade.xml"
+            line="14"
+            column="10"
+            startOffset="518"
+            endLine="14"
+            endColumn="19"
+            endOffset="527"/>
+    </incident>
+
+    <incident
+        id="UseCompatTextViewDrawableXml"
+        severity="warning"
+        message="Use `app:drawableStartCompat` instead of `android:drawableStart`">
+        <fix-composite>
+            <fix-attribute
+                description="Set drawableStartCompat=&quot;@android:drawable/ic_menu_myplaces&quot;"
+                namespace="http://schemas.android.com/apk/res-auto"
+                attribute="drawableStartCompat"
+                value="@android:drawable/ic_menu_myplaces"/>
+            <fix-attribute
+                description="Delete drawableStart"
+                namespace="http://schemas.android.com/apk/res/android"
+                attribute="drawableStart"/>
+        </fix-composite>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/dialog_upgrade.xml"
+            line="59"
+            column="17"
+            startOffset="2365"
+            endLine="59"
+            endColumn="75"
+            endOffset="2423"/>
+    </incident>
+
+    <incident
+        id="UseCompatTextViewDrawableXml"
+        severity="warning"
+        message="Use `app:drawableStartCompat` instead of `android:drawableStart`">
+        <fix-composite>
+            <fix-attribute
+                description="Set drawableStartCompat=&quot;@android:drawable/ic_menu_close_clear_cancel&quot;"
+                namespace="http://schemas.android.com/apk/res-auto"
+                attribute="drawableStartCompat"
+                value="@android:drawable/ic_menu_close_clear_cancel"/>
+            <fix-attribute
+                description="Delete drawableStart"
+                namespace="http://schemas.android.com/apk/res/android"
+                attribute="drawableStart"/>
+        </fix-composite>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/dialog_upgrade.xml"
+            line="70"
+            column="17"
+            startOffset="2874"
+            endLine="70"
+            endColumn="85"
+            endOffset="2942"/>
+    </incident>
+
+    <incident
+        id="UseCompatTextViewDrawableXml"
+        severity="warning"
+        message="Use `app:drawableStartCompat` instead of `android:drawableStart`">
+        <fix-composite>
+            <fix-attribute
+                description="Set drawableStartCompat=&quot;@android:drawable/ic_menu_recent_history&quot;"
+                namespace="http://schemas.android.com/apk/res-auto"
+                attribute="drawableStartCompat"
+                value="@android:drawable/ic_menu_recent_history"/>
+            <fix-attribute
+                description="Delete drawableStart"
+                namespace="http://schemas.android.com/apk/res/android"
+                attribute="drawableStart"/>
+        </fix-composite>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/dialog_upgrade.xml"
+            line="81"
+            column="17"
+            startOffset="3391"
+            endLine="81"
+            endColumn="81"
+            endOffset="3455"/>
+    </incident>
+
+    <incident
+        id="NotifyDataSetChanged"
+        severity="warning"
+        message="It will always be more efficient to use more specific change events if you can. Rely on `notifyDataSetChanged` as a last resort.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/HomeActivity.kt"
+            line="121"
+            column="9"
+            startOffset="4751"
+            endLine="121"
+            endColumn="39"
+            endOffset="4781"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="77"
+            column="37"
+            startOffset="3125"
+            endLine="77"
+            endColumn="63"
+            endOffset="3151"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="192"
+            column="44"
+            startOffset="8965"
+            endLine="192"
+            endColumn="101"
+            endOffset="9022"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="192"
+            column="45"
+            startOffset="8966"
+            endLine="192"
+            endColumn="52"
+            endOffset="8973"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="192"
+            column="65"
+            startOffset="8986"
+            endLine="192"
+            endColumn="100"
+            endOffset="9021"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="193"
+            column="42"
+            startOffset="9064"
+            endLine="193"
+            endColumn="53"
+            endOffset="9075"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="237"
+            column="64"
+            startOffset="11872"
+            endLine="237"
+            endColumn="95"
+            endOffset="11903"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="237"
+            column="65"
+            startOffset="11873"
+            endLine="237"
+            endColumn="70"
+            endOffset="11878"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="270"
+            column="58"
+            startOffset="13865"
+            endLine="270"
+            endColumn="64"
+            endOffset="13871"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="272"
+            column="61"
+            startOffset="13969"
+            endLine="272"
+            endColumn="66"
+            endOffset="13974"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="274"
+            column="58"
+            startOffset="14071"
+            endLine="274"
+            endColumn="63"
+            endOffset="14076"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="314"
+            column="37"
+            startOffset="15894"
+            endLine="314"
+            endColumn="63"
+            endOffset="15920"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="317"
+            column="34"
+            startOffset="16104"
+            endLine="317"
+            endColumn="45"
+            endOffset="16115"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="341"
+            column="41"
+            startOffset="17386"
+            endLine="341"
+            endColumn="67"
+            endOffset="17412"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="355"
+            column="36"
+            startOffset="18122"
+            endLine="355"
+            endColumn="67"
+            endOffset="18153"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="355"
+            column="37"
+            startOffset="18123"
+            endLine="355"
+            endColumn="42"
+            endOffset="18128"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="365"
+            column="40"
+            startOffset="18554"
+            endLine="365"
+            endColumn="60"
+            endOffset="18574"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="365"
+            column="41"
+            startOffset="18555"
+            endLine="365"
+            endColumn="51"
+            endOffset="18565"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/ScorecardActivity.kt"
+            line="394"
+            column="41"
+            startOffset="20133"
+            endLine="394"
+            endColumn="63"
+            endOffset="20155"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/SetupActivity.kt"
+            line="186"
+            column="21"
+            startOffset="7353"
+            endLine="186"
+            endColumn="37"
+            endOffset="7369"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/SetupActivity.kt"
+            line="287"
+            column="21"
+            startOffset="11400"
+            endLine="287"
+            endColumn="35"
+            endOffset="11414"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/SetupActivity.kt"
+            line="315"
+            column="24"
+            startOffset="12501"
+            endLine="315"
+            endColumn="43"
+            endOffset="12520"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/SetupActivity.kt"
+            line="315"
+            column="25"
+            startOffset="12502"
+            endLine="315"
+            endColumn="30"
+            endOffset="12507"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/SetupActivity.kt"
+            line="315"
+            column="32"
+            startOffset="12509"
+            endLine="315"
+            endColumn="41"
+            endOffset="12518"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/SetupActivity.kt"
+            line="387"
+            column="42"
+            startOffset="15036"
+            endLine="387"
+            endColumn="95"
+            endOffset="15089"/>
+    </incident>
+
+    <incident
+        id="SetTextI18n"
+        severity="warning"
+        message="String literal in `setText` can not be translated. Use Android resources instead.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/app/burdii/SetupActivity.kt"
+            line="387"
+            column="84"
+            startOffset="15078"
+            endLine="387"
+            endColumn="94"
+            endOffset="15088"/>
+    </incident>
+
+    <incident
+        id="UseTomlInstead"
+        severity="warning"
+        message="Use version catalog instead">
+        <fix-composite
+            description="Replace with new library catalog declaration for com-android-billingclient-billing21"
+            robot="true">
+            <fix-replace
+                description="Replace with com-android-billingclient-billing21 = &quot;6.0.1&quot;..."
+                robot="true"
+                oldString="_lint_insert_begin_"
+                replacement="com-android-billingclient-billing21 = &quot;6.0.1&quot;&#xA;">
+                <range
+                    file="$HOME/Desktop/Burdii/Burdii/Burdii/gradle/libs.versions.toml"
+                    startOffset="25"
+                    endOffset="25"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with com-android-billingclient-billing21 = { module = &quot;com.android.billingclient:billing&quot;, version.ref = &quot;com-android-billingclient-billing21&quot; }..."
+                robot="true"
+                oldString="_lint_insert_begin_"
+                replacement="com-android-billingclient-billing21 = { module = &quot;com.android.billingclient:billing&quot;, version.ref = &quot;com-android-billingclient-billing21&quot; }&#xA;">
+                <range
+                    file="$HOME/Desktop/Burdii/Burdii/Burdii/gradle/libs.versions.toml"
+                    startOffset="478"
+                    endOffset="478"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with libs.com.android.billingclient.billing21"
+                robot="true"
+                replacement="libs.com.android.billingclient.billing21">
+                <range
+                    file="${:app*projectDir}/build.gradle.kts"
+                    startOffset="1165"
+                    endOffset="1206"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*projectDir}/build.gradle.kts"
+            line="47"
+            column="21"
+            startOffset="1166"
+            endLine="47"
+            endColumn="60"
+            endOffset="1205"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-ktx than 1.12.0 is available: 1.16.0">
+        <fix-replace
+            description="Change to 1.16.0"
+            family="Update versions"
+            oldString="1.12.0"
+            replacement="1.16.0"/>
+        <location
+            file="$HOME/Desktop/Burdii/Burdii/Burdii/gradle/libs.versions.toml"
+            line="4"
+            column="11"
+            startOffset="53"
+            endLine="4"
+            endColumn="19"
+            endOffset="61"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.appcompat:appcompat than 1.6.1 is available: 1.7.0">
+        <fix-replace
+            description="Change to 1.7.0"
+            family="Update versions"
+            oldString="1.6.1"
+            replacement="1.7.0"/>
+        <location
+            file="$HOME/Desktop/Burdii/Burdii/Burdii/gradle/libs.versions.toml"
+            line="5"
+            column="13"
+            startOffset="74"
+            endLine="5"
+            endColumn="20"
+            endOffset="81"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of com.google.android.material:material than 1.11.0 is available: 1.12.0">
+        <fix-replace
+            description="Change to 1.12.0"
+            family="Update versions"
+            oldString="1.11.0"
+            replacement="1.12.0"/>
+        <location
+            file="$HOME/Desktop/Burdii/Burdii/Burdii/gradle/libs.versions.toml"
+            line="6"
+            column="12"
+            startOffset="93"
+            endLine="6"
+            endColumn="20"
+            endOffset="101"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.test.ext:junit than 1.1.5 is available: 1.2.1">
+        <fix-replace
+            description="Change to 1.2.1"
+            family="Update versions"
+            oldString="1.1.5"
+            replacement="1.2.1"/>
+        <location
+            file="$HOME/Desktop/Burdii/Burdii/Burdii/gradle/libs.versions.toml"
+            line="8"
+            column="17"
+            startOffset="135"
+            endLine="8"
+            endColumn="24"
+            endOffset="142"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.test.espresso:espresso-core than 3.5.1 is available: 3.6.1">
+        <fix-replace
+            description="Change to 3.6.1"
+            family="Update versions"
+            oldString="3.5.1"
+            replacement="3.6.1"/>
+        <location
+            file="$HOME/Desktop/Burdii/Burdii/Burdii/gradle/libs.versions.toml"
+            line="9"
+            column="16"
+            startOffset="158"
+            endLine="9"
+            endColumn="23"
+            endOffset="165"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of com.android.application than 8.2.0 is available: 8.10.0">
+        <fix-replace
+            description="Change to 8.10.0"
+            family="Update versions"
+            oldString="8.2.0"
+            replacement="8.10.0"/>
+        <location
+            file="$HOME/Desktop/Burdii/Burdii/Burdii/gradle/libs.versions.toml"
+            line="2"
+            column="7"
+            startOffset="17"
+            endLine="2"
+            endColumn="14"
+            endOffset="24"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of org.jetbrains.kotlin.android than 1.9.22 is available: 2.0.21">
+        <fix-replace
+            description="Change to 2.0.21"
+            family="Update versions"
+            oldString="1.9.22"
+            replacement="2.0.21"/>
+        <location
+            file="$HOME/Desktop/Burdii/Burdii/Burdii/gradle/libs.versions.toml"
+            line="3"
+            column="10"
+            startOffset="34"
+            endLine="3"
+            endColumn="18"
+            endOffset="42"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of com.android.billingclient:billing than 6.0.1 is available: 7.1.1">
+        <fix-replace
+            description="Change to 7.1.1"
+            family="Update versions"
+            oldString="6.0.1"
+            replacement="7.1.1"/>
+        <location
+            file="${:app*projectDir}/build.gradle.kts"
+            line="47"
+            column="21"
+            startOffset="1166"
+            endLine="47"
+            endColumn="60"
+            endOffset="1205"/>
+    </incident>
+
+    <incident
+        id="IconLocation"
+        severity="warning"
+        message="Found bitmap drawable `res/drawable/ic_grass.jpg` in densityless folder">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/drawable/ic_grass.jpg"/>
+    </incident>
+
+    <incident
+        id="IconExtension"
+        severity="warning"
+        message="Misleading file extension; named `.jpg` but the file format is `png`">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/drawable/ic_grass.jpg"/>
+    </incident>
+
+    <incident
+        id="Overdraw"
+        severity="warning"
+        message="Possible overdraw: Root element paints background `@color/backgroundMint` with a theme that also paints a background (inferred theme is `@style/Theme.Burdii`)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_home.xml"
+            line="7"
+            column="5"
+            startOffset="341"
+            endLine="7"
+            endColumn="47"
+            endOffset="383"/>
+    </incident>
+
+    <incident
+        id="Overdraw"
+        severity="warning"
+        message="Possible overdraw: Root element paints background `@color/backgroundMint` with a theme that also paints a background (inferred theme is `@style/Theme.Burdii`)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_scorecard.xml"
+            line="7"
+            column="5"
+            startOffset="341"
+            endLine="7"
+            endColumn="47"
+            endOffset="383"/>
+    </incident>
+
+    <incident
+        id="Overdraw"
+        severity="warning"
+        message="Possible overdraw: Root element paints background `@color/backgroundMint` with a theme that also paints a background (inferred theme is `@style/Theme.Burdii`)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_setup.xml"
+            line="7"
+            column="5"
+            startOffset="302"
+            endLine="7"
+            endColumn="47"
+            endOffset="344"/>
+    </incident>
+
+    <incident
+        id="Overdraw"
+        severity="warning"
+        message="Possible overdraw: Root element paints background `@color/colorPrimary` with a theme that also paints a background (inferred theme is `@style/Theme_Burdii_NoActionBar`)">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/layout/activity_splash.xml"
+            line="7"
+            column="5"
+            startOffset="341"
+            endLine="7"
+            endColumn="45"
+            endOffset="381"/>
+    </incident>
+
+</incidents>
