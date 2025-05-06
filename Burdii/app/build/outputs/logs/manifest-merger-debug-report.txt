@@ -36,16 +36,11 @@ MERGED from [androidx.core:core-ktx:1.12.0] /home/christianhoran/.gradle/caches/
 MERGED from [androidx.annotation:annotation-experimental:1.3.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/68cfc872ffeeb6afac1c32d3897a28ca/transformed/annotation-experimental-1.3.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/48a5bd33cbd67e1821acb5f9fdfa0169/transformed/cursoradapter-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.cardview:cardview:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/954f6eb36f432b47541d30e39df56db4/transformed/cardview-1.0.0/AndroidManifest.xml:17:1-22:12
-MERGED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:2:1-30:12
-MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:15:1-37:12
-MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:15:1-41:12
-MERGED from [com.google.android.datatransport:transport-api:3.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/308561d77f511fd10e811a6f45792b1a/transformed/transport-api-3.0.0/AndroidManifest.xml:15:1-22:12
 MERGED from [androidx.interpolator:interpolator:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/71fb198b909100891e5cac5bee821680/transformed/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/02e21c81536c5055f80c0bc018d49bf3/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:17:1-27:12
 MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/d3571a4f107cd8c4779c6f3f820bee9d/transformed/profileinstaller-1.3.0/AndroidManifest.xml:17:1-55:12
 MERGED from [androidx.startup:startup-runtime:1.1.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/087b0f6039a93ff1d95cdbd56f4aa6c0/transformed/startup-runtime-1.1.1/AndroidManifest.xml:17:1-33:12
 MERGED from [androidx.tracing:tracing:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/a26c53d053781a9d79b239fbd642faae/transformed/tracing-1.0.0/AndroidManifest.xml:17:1-24:12
-MERGED from [com.google.firebase:firebase-encoders-json:18.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/7d838e4f6591a4c37429ff57ce6d1623/transformed/firebase-encoders-json-18.0.0/AndroidManifest.xml:15:1-23:12
 MERGED from [androidx.arch.core:core-runtime:2.2.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/090e4a3e9f53dc1b0fc28ae4a8945faa/transformed/core-runtime-2.2.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.documentfile:documentfile:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/57a96db07bace98451c59ca789e80695/transformed/documentfile-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/e2e22da896764596f23b8173133f4e5e/transformed/localbroadcastmanager-1.0.0/AndroidManifest.xml:17:1-22:12
@@ -66,8 +61,6 @@ ADDED from /home/christianhoran/Desktop/Burdii/Burdii/Burdii/app/src/main/Androi
 		ADDED from /home/christianhoran/Desktop/Burdii/Burdii/Burdii/app/src/main/AndroidManifest.xml:6:22-68
 uses-permission#android.permission.INTERNET
 ADDED from /home/christianhoran/Desktop/Burdii/Burdii/Burdii/app/src/main/AndroidManifest.xml:7:5-67
-MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:25:5-67
-MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:25:5-67
 	android:name
 		ADDED from /home/christianhoran/Desktop/Burdii/Burdii/Burdii/app/src/main/AndroidManifest.xml:7:22-64
 application
@@ -83,12 +76,6 @@ MERGED from [androidx.core:core:1.12.0] /home/christianhoran/.gradle/caches/8.11
 MERGED from [androidx.core:core:1.12.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/d6d9362c5fd4a09fe1f38ba6fb843490/transformed/core-1.12.0/AndroidManifest.xml:28:5-89
 MERGED from [androidx.lifecycle:lifecycle-process:2.6.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/e7a5c64bb5f5081f1f8558a4bdfb2cef/transformed/lifecycle-process-2.6.1/AndroidManifest.xml:23:5-33:19
 MERGED from [androidx.lifecycle:lifecycle-process:2.6.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/e7a5c64bb5f5081f1f8558a4bdfb2cef/transformed/lifecycle-process-2.6.1/AndroidManifest.xml:23:5-33:19
-MERGED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:18:5-28:19
-MERGED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:18:5-28:19
-MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:27:5-35:19
-MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:27:5-35:19
-MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:25:5-39:19
-MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:25:5-39:19
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/02e21c81536c5055f80c0bc018d49bf3/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/02e21c81536c5055f80c0bc018d49bf3/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
 MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/d3571a4f107cd8c4779c6f3f820bee9d/transformed/profileinstaller-1.3.0/AndroidManifest.xml:23:5-53:19
@@ -221,14 +208,6 @@ MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/christianhoran/.g
 MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/48a5bd33cbd67e1821acb5f9fdfa0169/transformed/cursoradapter-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.cardview:cardview:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/954f6eb36f432b47541d30e39df56db4/transformed/cardview-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.cardview:cardview:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/954f6eb36f432b47541d30e39df56db4/transformed/cardview-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:6:5-8:41
-MERGED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:6:5-8:41
-MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:18:5-20:41
-MERGED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:18:5-20:41
-MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:18:5-20:41
-MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:18:5-20:41
-MERGED from [com.google.android.datatransport:transport-api:3.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/308561d77f511fd10e811a6f45792b1a/transformed/transport-api-3.0.0/AndroidManifest.xml:18:5-20:41
-MERGED from [com.google.android.datatransport:transport-api:3.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/308561d77f511fd10e811a6f45792b1a/transformed/transport-api-3.0.0/AndroidManifest.xml:18:5-20:41
 MERGED from [androidx.interpolator:interpolator:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/71fb198b909100891e5cac5bee821680/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.interpolator:interpolator:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/71fb198b909100891e5cac5bee821680/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/02e21c81536c5055f80c0bc018d49bf3/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
@@ -239,8 +218,6 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] /home/christianhoran/.gradl
 MERGED from [androidx.startup:startup-runtime:1.1.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/087b0f6039a93ff1d95cdbd56f4aa6c0/transformed/startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
 MERGED from [androidx.tracing:tracing:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/a26c53d053781a9d79b239fbd642faae/transformed/tracing-1.0.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.tracing:tracing:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/a26c53d053781a9d79b239fbd642faae/transformed/tracing-1.0.0/AndroidManifest.xml:20:5-22:41
-MERGED from [com.google.firebase:firebase-encoders-json:18.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/7d838e4f6591a4c37429ff57ce6d1623/transformed/firebase-encoders-json-18.0.0/AndroidManifest.xml:19:5-21:41
-MERGED from [com.google.firebase:firebase-encoders-json:18.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/7d838e4f6591a4c37429ff57ce6d1623/transformed/firebase-encoders-json-18.0.0/AndroidManifest.xml:19:5-21:41
 MERGED from [androidx.arch.core:core-runtime:2.2.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/090e4a3e9f53dc1b0fc28ae4a8945faa/transformed/core-runtime-2.2.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.arch.core:core-runtime:2.2.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/090e4a3e9f53dc1b0fc28ae4a8945faa/transformed/core-runtime-2.2.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.documentfile:documentfile:1.0.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/57a96db07bace98451c59ca789e80695/transformed/documentfile-1.0.0/AndroidManifest.xml:20:5-44
@@ -301,68 +278,6 @@ ADDED from [androidx.lifecycle:lifecycle-process:2.6.1] /home/christianhoran/.gr
 		ADDED from [androidx.lifecycle:lifecycle-process:2.6.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/e7a5c64bb5f5081f1f8558a4bdfb2cef/transformed/lifecycle-process-2.6.1/AndroidManifest.xml:31:17-49
 	android:name
 		ADDED from [androidx.lifecycle:lifecycle-process:2.6.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/e7a5c64bb5f5081f1f8558a4bdfb2cef/transformed/lifecycle-process-2.6.1/AndroidManifest.xml:30:17-78
-uses-permission#com.android.vending.BILLING
-ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:10:5-67
-	android:name
-		ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:10:22-64
-queries
-ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:12:5-16:15
-intent#action:name:com.android.vending.billing.InAppBillingService.BIND
-ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:13:9-15:18
-action#com.android.vending.billing.InAppBillingService.BIND
-ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:14:13-91
-	android:name
-		ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:14:21-88
-meta-data#com.google.android.play.billingclient.version
-ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:19:9-21:37
-	android:value
-		ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:21:13-34
-	android:name
-		ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:20:13-73
-activity#com.android.billingclient.api.ProxyBillingActivity
-ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:23:9-27:75
-	android:exported
-		ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:26:13-37
-	android:configChanges
-		ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:25:13-96
-	android:theme
-		ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:27:13-72
-	android:name
-		ADDED from [com.android.billingclient:billing:6.0.1] /home/christianhoran/.gradle/caches/8.11.1/transforms/6f522e673c4883993accf06cc93b7a88/transformed/billing-6.0.1/AndroidManifest.xml:24:13-78
-uses-permission#android.permission.ACCESS_NETWORK_STATE
-ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:24:5-79
-MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:22:5-79
-MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:22:5-79
-	android:name
-		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:24:22-76
-service#com.google.android.datatransport.runtime.backends.TransportBackendDiscovery
-ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:28:9-34:19
-MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:36:9-38:40
-MERGED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:36:9-38:40
-	android:exported
-		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:30:13-37
-	android:name
-		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:29:13-103
-meta-data#backend:com.google.android.datatransport.cct.CctBackendFactory
-ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:31:13-33:39
-	android:value
-		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:33:17-36
-	android:name
-		ADDED from [com.google.android.datatransport:transport-backend-cct:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/a43b108b3047e65f12acf7608c64a61e/transformed/transport-backend-cct-3.1.8/AndroidManifest.xml:32:17-94
-service#com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
-ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:26:9-30:19
-	android:exported
-		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:28:13-37
-	android:permission
-		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:29:13-69
-	android:name
-		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:27:13-117
-receiver#com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver
-ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:32:9-34:40
-	android:exported
-		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:34:13-37
-	android:name
-		ADDED from [com.google.android.datatransport:transport-runtime:3.1.8] /home/christianhoran/.gradle/caches/8.11.1/transforms/dc5c918d2b9df52e3a6aa0eb869f8caa/transformed/transport-runtime-3.1.8/AndroidManifest.xml:33:13-132
 meta-data#androidx.profileinstaller.ProfileInstallerInitializer
 ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] /home/christianhoran/.gradle/caches/8.11.1/transforms/d3571a4f107cd8c4779c6f3f820bee9d/transformed/profileinstaller-1.3.0/AndroidManifest.xml:29:13-31:52
 	android:value

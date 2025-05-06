@@ -4,11 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,7 +21,6 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var upgradeButton: Button
     private lateinit var adapter: RoundAdapter
     private var roundsList = mutableListOf<Round>()
-    private lateinit var billingManager: BillingManager
     
     // --- SharedPreferences Constants and Gson --- 
     private val PREFS_FILENAME = "com.app.burdii.prefs"
@@ -45,14 +42,6 @@ class HomeActivity : AppCompatActivity() {
         clearButton = findViewById(R.id.clearButton)
         upgradeButton = findViewById(R.id.upgradeButton)
         
-        // Initialize billing manager
-        billingManager = BillingManager(this) {
-            // Callback for when purchase is successful and feature is unlocked
-            updateUIForPremiumFeatures()
-            Toast.makeText(this, getString(R.string.premium_success), Toast.LENGTH_LONG).show()
-        }
-        billingManager.startBillingConnection()
-
         // Load rounds from SharedPreferences instead of sample data
         roundsList = loadRounds().toMutableList()
 
@@ -81,7 +70,7 @@ class HomeActivity : AppCompatActivity() {
         }
         
         upgradeButton.setOnClickListener {
-            showUpgradeDialog()
+            Toast.makeText(this, "Burdii Pro features are coming soon!", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -122,49 +111,11 @@ class HomeActivity : AppCompatActivity() {
         Toast.makeText(this, "History Cleared", Toast.LENGTH_SHORT).show()
     }
     
-    private fun showUpgradeDialog() {
-        // If already purchased, just show a message
-        if (billingManager.isFeatureUnlocked) {
-            Toast.makeText(this, getString(R.string.premium_already_purchased), Toast.LENGTH_SHORT).show()
-            return
-        }
-        
-        // Create and show the upgrade dialog
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_upgrade, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(true)
-            .create()
-            
-        dialog.show()
-        
-        // Set up button click listeners
-        dialogView.findViewById<Button>(R.id.buyButton).setOnClickListener {
-            billingManager.startPurchaseFlow(this)
-            dialog.dismiss()
-        }
-        
-        dialogView.findViewById<Button>(R.id.restoreButton).setOnClickListener {
-            billingManager.queryExistingPurchases()
-            dialog.dismiss()
-        }
-    }
-    
-    private fun updateUIForPremiumFeatures() {
-        // Update any UI elements that should change when premium is activated
-        upgradeButton.visibility = if (billingManager.isFeatureUnlocked) View.GONE else View.VISIBLE
-    }
-    
     override fun onResume() {
         super.onResume()
-        // Check purchase status
-        billingManager.queryExistingPurchases()
-        updateUIForPremiumFeatures()
-    }
-    
-    override fun onDestroy() {
-        super.onDestroy()
-        // Release billing client
-        billingManager.destroy()
+        // Load rounds and update adapter in case of changes from other activities
+        roundsList.clear()
+        roundsList.addAll(loadRounds())
+        adapter.notifyDataSetChanged()
     }
 }

@@ -41,6 +41,7 @@
  *     a "Restore" button calling it explicitly so the user feels in control).
  */
 
+/*
 package com.app.burdii
 
 import android.app.Activity
@@ -58,6 +59,7 @@ import kotlinx.coroutines.*
  *   • Handling purchase updates, verification placeholder & acknowledgement.
  *   • Exposing callbacks for UI updates and unlock persistence.
  */
+/*
 class BillingManager(
     private val appContext: Context,
     /**
@@ -308,3 +310,209 @@ class BillingManager(
         scope.cancel()
     }
 }
+*/
+
+/*
+package com.app.burdii
+
+import android.app.Activity
+import android.content.Context
+import android.util.Log
+import com.android.billingclient.api.*
+
+// Original content of BillingManager.kt is now inside this block comment.
+// This class was responsible for handling Google Play Billing.
+// It has been temporarily disabled for the initial Play Store upload
+// to acquire a Billing ID without active billing functionality.
+
+class BillingManager_DEACTIVATED(private val context: Context, private val onFeatureUnlocked: () -> Unit) {
+    private lateinit var billingClient: BillingClient
+    private val productIds = listOf("com.app.burdii.voice_feature") 
+    var isFeatureUnlocked = false
+        private set
+
+    companion object {
+        private const val TAG = "BillingManager"
+    }
+
+    init {
+        // setupBillingClient()
+    }
+
+    private fun setupBillingClient() {
+        // billingClient = BillingClient.newBuilder(context)
+        //     .setListener(purchasesUpdatedListener)
+        //     .enablePendingPurchases()
+        //     .build()
+    }
+
+    fun startBillingConnection() {
+        // billingClient.startConnection(object : BillingClientStateListener {
+        //     override fun onBillingSetupFinished(billingResult: BillingResult) {
+        //         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+        //             Log.d(TAG, "Billing client setup finished successfully.")
+        //             queryProductDetails()
+        //             queryExistingPurchases() 
+        //         } else {
+        //             Log.e(TAG, "Billing client setup failed: ${billingResult.debugMessage}")
+        //         }
+        //     }
+
+        //     override fun onBillingServiceDisconnected() {
+        //         Log.w(TAG, "Billing service disconnected. Retrying connection...")
+        //     }
+        // })
+    }
+
+    private fun queryProductDetails() {
+        // val productList = productIds.map { productId ->
+        //     QueryProductDetailsParams.Product.newBuilder()
+        //         .setProductId(productId)
+        //         .setProductType(BillingClient.ProductType.INAPP)
+        //         .build()
+        // }
+
+        // val params = QueryProductDetailsParams.newBuilder()
+        //     .setProductList(productList)
+        //     .build()
+
+        // billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+        //     if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
+        //         Log.d(TAG, "Product details queried successfully: $productDetailsList")
+        //     } else {
+        //         Log.e(TAG, "Failed to query product details: ${billingResult.debugMessage}")
+        //     }
+        // }
+    }
+
+    fun startPurchaseFlow(activity: Activity) {
+        // if (!billingClient.isReady) {
+        //     Log.e(TAG, "Billing client not ready.")
+        //     return
+        // }
+
+        // val productList = productIds.map { productId ->
+        //     QueryProductDetailsParams.Product.newBuilder()
+        //         .setProductId(productId)
+        //         .setProductType(BillingClient.ProductType.INAPP)
+        //         .build()
+        // }
+        // val params = QueryProductDetailsParams.newBuilder().setProductList(productList)
+
+        // billingClient.queryProductDetailsAsync(params.build()) { billingResult, productDetailsList ->
+        //     if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
+        //         val productDetails = productDetailsList.find { it.productId == productIds.first() } 
+        //         if (productDetails != null) {
+        //             val flowParams = BillingFlowParams.newBuilder()
+        //                 .setProductDetailsParamsList(
+        //                     listOf(
+        //                         BillingFlowParams.ProductDetailsParams.newBuilder()
+        //                             .setProductDetails(productDetails)
+        //                             .build()
+        //                     )
+        //                 )
+        //                 .build()
+        //             val responseCode = billingClient.launchBillingFlow(activity, flowParams).responseCode
+        //             if (responseCode != BillingClient.BillingResponseCode.OK) {
+        //                 Log.e(TAG, "Failed to launch billing flow: $responseCode")
+        //             }
+        //         } else {
+        //             Log.e(TAG, "Product details not found for ${productIds.first()}.")
+        //         }
+        //     } else {
+        //         Log.e(TAG, "Failed to query product details for purchase: ${billingResult.debugMessage}")
+        //     }
+        // }
+    }
+
+    private val purchasesUpdatedListener = PurchasesUpdatedListener {
+            // billingResult, purchases ->
+        // if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
+        //     for (purchase in purchases) {
+        //         handlePurchase(purchase)
+        //     }
+        // } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
+        //     Log.i(TAG, "User canceled the purchase.")
+        // } else {
+        //     Log.e(TAG, "Purchase error: ${billingResult.debugMessage}")
+        // }
+    }
+
+    private fun handlePurchase(purchase: Purchase) {
+        // if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
+        //     if (!purchase.isAcknowledged) {
+        //         acknowledgePurchase(purchase.purchaseToken)
+        //     }
+        //     if (productIds.contains(purchase.products.firstOrNull())) { 
+        //         grantEntitlement()
+        //     }
+        // } else if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
+        //     Log.i(TAG, "Purchase is pending. Please wait for completion.")
+        // }
+    }
+
+    private fun acknowledgePurchase(purchaseToken: String) {
+        // val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+        //     .setPurchaseToken(purchaseToken)
+        //     .build()
+        // billingClient.acknowledgePurchase(acknowledgePurchaseParams) { billingResult ->
+        //     if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+        //         Log.d(TAG, "Purchase acknowledged successfully.")
+        //     } else {
+        //         Log.e(TAG, "Failed to acknowledge purchase: ${billingResult.debugMessage}")
+        //     }
+        // }
+    }
+
+    private fun grantEntitlement() {
+        // isFeatureUnlocked = true
+        // onFeatureUnlocked.invoke() 
+        // Log.d(TAG, "Feature unlocked.")
+    }
+
+    fun queryExistingPurchases() {
+        // if (!billingClient.isReady) {
+        //     Log.e(TAG, "Billing client not ready for querying purchases.")
+        //     return
+        // }
+
+        // billingClient.queryPurchasesAsync(
+        //     QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build()
+        // ) { billingResult, purchasesList ->
+        //     if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+        //         var featureAlreadyUnlocked = false
+        //         for (purchase in purchasesList) {
+        //             if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED && productIds.contains(purchase.products.firstOrNull())) {
+        //                 if (!isFeatureUnlocked) { 
+        //                     grantEntitlement()
+        //                 }
+        //                 featureAlreadyUnlocked = true 
+        //                 if (!purchase.isAcknowledged) {
+        //                     acknowledgePurchase(purchase.purchaseToken) 
+        //                 }
+        //             }
+        //         }
+        //         if (featureAlreadyUnlocked) {
+        //             Log.d(TAG, "Existing purchase found and feature restored.")
+        //         } else {
+        //             Log.d(TAG, "No existing purchases found for the feature or feature already marked as unlocked.")
+        //         }
+        //         if (!featureAlreadyUnlocked && isFeatureUnlocked) {
+        //             isFeatureUnlocked = false
+        //             Log.d(TAG, "Feature marked as locked as no valid existing purchase found.")
+        //         }
+
+        //     } else {
+        //         Log.e(TAG, "Failed to query existing purchases: ${billingResult.debugMessage}")
+        //     }
+        // }
+    }
+
+    fun destroy() {
+        // if (billingClient.isReady) {
+        //     billingClient.endConnection()
+        //     Log.d(TAG, "Billing client connection ended.")
+        // }
+    }
+}
+*/

@@ -6,11 +6,9 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import com.app.burdii.BillingManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -29,12 +27,10 @@ class SetupActivity : AppCompatActivity() {
     private lateinit var startGameButton: MaterialButton
     private lateinit var voiceInputRadioButton: RadioButton
     private lateinit var manualInputRadioButton: RadioButton
+    private lateinit var inputMethodRadioGroup: RadioGroup
     
     private lateinit var playerNames: Array<String>
     private var pars: IntArray? = null
-
-    // --- Billing ---
-    private lateinit var billingManager: BillingManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,25 +44,18 @@ class SetupActivity : AppCompatActivity() {
         startGameButton = findViewById(R.id.startGameButton)
         voiceInputRadioButton = findViewById(R.id.voiceInputRadioButton)
         manualInputRadioButton = findViewById(R.id.manualInputRadioButton)
+        inputMethodRadioGroup = findViewById(R.id.inputMethodRadioGroup)
 
-        // --- Billing initialization ---
-        billingManager = BillingManager(this) {
-            // Feature unlocked callback
-            updateVoiceInputUI()
-            Toast.makeText(this, getString(R.string.premium_success), Toast.LENGTH_LONG).show()
-            voiceInputRadioButton.isChecked = true
-        }
-        billingManager.startBillingConnection()
-        
-        // Set initial state of voice input option
-        updateVoiceInputUI()
+        // Initial UI setup - Voice option disabled
+        voiceInputRadioButton.isEnabled = false // Disable voice input
+        manualInputRadioButton.isChecked = true
 
-        // RadioGroup listener to trigger purchase if locked
-        val radioGroup: RadioGroup = findViewById(R.id.inputMethodRadioGroup)
-        radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId == R.id.voiceInputRadioButton && !billingManager.isFeatureUnlocked) {
-                showUpgradeDialog()
-                manualInputRadioButton.isChecked = true
+        // Listener for input method changes
+        inputMethodRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+            if (checkedId == R.id.voiceInputRadioButton) {
+                // If voice is selected, it's disabled, so show a toast and revert
+                Toast.makeText(this, "Voice input is a Pro feature, coming soon!", Toast.LENGTH_LONG).show()
+                manualInputRadioButton.isChecked = true // Revert to manual
             }
         }
 
@@ -127,12 +116,6 @@ class SetupActivity : AppCompatActivity() {
         
         if (!::playerNames.isInitialized || playerNames.size != numPlayers) {
             Toast.makeText(this, "Please set player names", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        
-        // Prevent starting game with voice method if not unlocked
-        if (voiceInputRadioButton.isChecked && !billingManager.isFeatureUnlocked) {
-            Toast.makeText(this, "Please unlock voice feature first", Toast.LENGTH_SHORT).show()
             return false
         }
         
@@ -252,7 +235,7 @@ class SetupActivity : AppCompatActivity() {
             inputLayouts += layout to editText
         }
         
-        val dialog = AlertDialog.Builder(this)
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
             .setView(scrollView)
             .setPositiveButton("OK") { _, _ ->
                 // Explicitly use 'this' to refer to the class member
@@ -274,7 +257,7 @@ class SetupActivity : AppCompatActivity() {
      * Dialog to input par values with improved UI
      */
     private fun showParsDialog(numHoles: Int) {
-        val dialog = AlertDialog.Builder(this)
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
         val scrollView = ScrollView(this)
         val containerLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -368,55 +351,5 @@ class SetupActivity : AppCompatActivity() {
             dp.toFloat(),
             resources.displayMetrics
         ).toInt()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        billingManager.queryExistingPurchases()
-        updateVoiceInputUI()
-    }
-    
-    /**
-     * Updates the UI for voice input option based on premium status
-     */
-    private fun updateVoiceInputUI() {
-        voiceInputRadioButton.isEnabled = true // Always enabled for clicking
-        
-        // Add a premium badge if not unlocked
-        if (!billingManager.isFeatureUnlocked) {
-            voiceInputRadioButton.text = "${getString(R.string.input_method_voice)} (Premium)"
-        } else {
-            voiceInputRadioButton.text = getString(R.string.input_method_voice)
-        }
-    }
-    
-    /**
-     * Shows the premium upgrade dialog
-     */
-    private fun showUpgradeDialog() {
-        // Create and show the upgrade dialog
-        val dialogView = layoutInflater.inflate(R.layout.dialog_upgrade, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(true)
-            .create()
-            
-        dialog.show()
-        
-        // Set up button click listeners
-        dialogView.findViewById<Button>(R.id.buyButton).setOnClickListener {
-            billingManager.startPurchaseFlow(this)
-            dialog.dismiss()
-        }
-        
-        dialogView.findViewById<Button>(R.id.restoreButton).setOnClickListener {
-            billingManager.queryExistingPurchases()
-            dialog.dismiss()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        billingManager.destroy()
     }
 }

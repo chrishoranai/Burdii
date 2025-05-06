@@ -8,7 +8,7 @@
     <string name="start_new_round">Start New Round</string>
     <string name="recent_rounds">Recent Rounds</string>
     <string name="clear_history">Clear History</string>
-    <string name="upgrade_button">Upgrade to Pro</string>
+    <string name="upgrade_button">Burdii Pro (Coming Soon)</string>
     
     <!-- Setup Screen -->
     <string name="setup_title">Round Setup</string>
@@ -19,7 +19,7 @@
     <string name="set_pars">Set Par Values?</string>
     <string name="start_round">Start Round</string>
     <string name="input_method">How would you like to keep score?</string>
-    <string name="input_method_voice">Voice</string>
+    <string name="input_method_voice">Voice (Pro - Coming Soon)</string>
     <string name="input_method_manual">Manual</string>
     <string name="add_player">Add Another Player</string>
     
@@ -39,14 +39,14 @@
     <string name="score_not_caught">Sorry, I did not catch that. Please say the score again.</string>
     
     <!-- In-App Purchase -->
-    <string name="premium_title">Upgrade to Burdii Pro</string>
-    <string name="premium_price">$1.99 one-time purchase</string>
+    <string name="premium_title">Burdii Pro (Coming Soon)</string>
+    <string name="premium_price">Pricing: TBD</string>
     <string name="premium_feature_voice">Voice Scorekeeping</string>
     <string name="premium_feature_ads">No Advertisements</string>
     <string name="premium_feature_unlimited">Unlimited Rounds</string>
     <string name="premium_feature_support">Priority Support</string>
-    <string name="premium_buy_button">Buy Now</string>
-    <string name="premium_restore_button">Restore Purchase</string>
+    <string name="premium_buy_button">Learn More</string>
+    <string name="premium_restore_button">Restore (Coming Soon)</string>
     <string name="premium_success">Purchase successful! Enjoy Burdii Pro.</string>
     <string name="premium_already_purchased">You already own Burdii Pro!</string>
     <string name="premium_failed">Purchase failed. Please try again later.</string>
