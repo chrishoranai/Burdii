@@ -1,3 +1,37 @@
 <resources>
+    <!-- App info -->
     <string name="app_name">Burdii</string>
+    <string name="app_tagline">Handsfree score keeping, so you can focus on your game, not your phone</string>
+    <string name="app_logo">Burdii Logo</string>
+    
+    <!-- Home Screen -->
+    <string name="start_new_round">Start New Round</string>
+    <string name="recent_rounds">Recent Rounds</string>
+    <string name="clear_history">Clear History</string>
+    
+    <!-- Setup Screen -->
+    <string name="setup_title">Round Setup</string>
+    <string name="num_holes">Number of Holes</string>
+    <string name="num_players">Number of Players</string>
+    <string name="set_player_names">Set Player Names</string>
+    <string name="set_pars">Set Par Values</string>
+    <string name="start_game">Start Game</string>
+    <string name="input_method">How would you like to keep score?</string>
+    <string name="input_method_voice">Voice</string>
+    <string name="input_method_manual">Manual</string>
+    <string name="add_player">Add Another Player</string>
+    
+    <!-- Scorecard Screen -->
+    <string name="current_hole">Current Hole: %1$d</string>
+    <string name="hole">Hole %1$d</string>
+    <string name="hole_with_par">Hole %1$d (Par %2$d)</string>
+    <string name="player">Player</string>
+    <string name="total">Total</string>
+    <string name="game_finished">Game Finished</string>
+    
+    <!-- Voice Commands -->
+    <string name="wake_word">Hey Birdie</string>
+    <string name="score_prompt">Tell me the score for %1$s on Hole %2$d</string>
+    <string name="score_not_understood">Sorry, I did not understand. Please say the score again.</string>
+    <string name="score_not_caught">Sorry, I did not catch that. Please say the score again.</string>
 </resources>

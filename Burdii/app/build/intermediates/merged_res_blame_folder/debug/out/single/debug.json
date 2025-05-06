@@ -1,0 +1,46 @@
+[
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/drawable_gradient_background.xml.flat",
+        "source": "com.app.burdii.app-main-33:/drawable/gradient_background.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/layout_activity_home.xml.flat",
+        "source": "com.app.burdii.app-main-33:/layout/activity_home.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/xml_data_extraction_rules.xml.flat",
+        "source": "com.app.burdii.app-main-33:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/drawable_ic_mic.xml.flat",
+        "source": "com.app.burdii.app-main-33:/drawable/ic_mic.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/xml_backup_rules.xml.flat",
+        "source": "com.app.burdii.app-main-33:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/layout_item_round.xml.flat",
+        "source": "com.app.burdii.app-main-33:/layout/item_round.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/drawable_ic_disc_golf.xml.flat",
+        "source": "com.app.burdii.app-main-33:/drawable/ic_disc_golf.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/drawable_ic_add.xml.flat",
+        "source": "com.app.burdii.app-main-33:/drawable/ic_add.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/layout_activity_splash.xml.flat",
+        "source": "com.app.burdii.app-main-33:/layout/activity_splash.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/layout_activity_setup.xml.flat",
+        "source": "com.app.burdii.app-main-33:/layout/activity_setup.xml"
+    },
+    {
+        "merged": "com.app.burdii.app-merged_res-31:/layout_activity_scorecard.xml.flat",
+        "source": "com.app.burdii.app-main-33:/layout/activity_scorecard.xml"
+    }
+]

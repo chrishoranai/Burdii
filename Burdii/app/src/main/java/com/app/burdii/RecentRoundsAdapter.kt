@@ -5,32 +5,27 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.app.burdii.Round
 
-// Define the Round data class
-data class Round(val id: Int, val date: String, val players: List<String>)
+class RoundAdapter(private val rounds: List<Round>) : RecyclerView.Adapter<RoundAdapter.ViewHolder>() {
 
-// RecentRoundsAdapter implementation
-class RecentRoundsAdapter(private val rounds: List<Round>) : RecyclerView.Adapter<RecentRoundsAdapter.ViewHolder>() {
-
-    // ViewHolder implementation
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val dateTextView: TextView = view.findViewById(R.id.dateTextView)
-        val playersTextView: TextView = view.findViewById(R.id.playersTextView)
+        val scoreTextView: TextView = view.findViewById(R.id.scoreTextView)
+        val holesTextView: TextView = view.findViewById(R.id.holesTextView)
     }
 
-    // Create new views (invoked by the layout manager)
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_recent_round, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_round, parent, false)
         return ViewHolder(view)
     }
 
-    // Bind the data to the views (invoked by the layout manager)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val round = rounds[position]
         holder.dateTextView.text = round.date
-        holder.playersTextView.text = "Players: ${round.players.size}"
+        holder.scoreTextView.text = round.scoreChange
+        holder.holesTextView.text = round.holesPlayed
     }
 
-    // Return the size of the dataset (invoked by the layout manager)
     override fun getItemCount(): Int = rounds.size
 }

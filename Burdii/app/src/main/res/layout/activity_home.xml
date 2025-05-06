@@ -1,80 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/gradient_background"
-    android:padding="16dp">
+    android:background="@color/backgroundMint"
+    android:padding="24dp"
+    tools:context=".HomeActivity">
 
-    <!-- Title and Logo -->
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- App Logo and Title Section -->
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@string/app_logo"
+        android:src="@drawable/ic_disc_golf"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_marginStart="8dp"
+        android:text="@string/app_name"
+        android:textColor="@color/colorPrimary"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/logoImageView"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/titleTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Burdi"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:textColor="#388E3C" />
-
-        <ImageView
-            android:id="@+id/logoImageView"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/logo" />
-    </LinearLayout>
-
-    <!-- Tagline -->
     <TextView
         android:id="@+id/taglineTextView"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Handfree score keeping, so you can focus on your game, not your phone."
-        android:textSize="16sp"
-        android:textColor="#000000"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="4dp"
+        android:text="@string/app_tagline"
+        android:textColor="@color/textSecondary"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
 
     <!-- Start New Round Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/startNewRoundButton"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="+ Start New Round"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#4CAF50"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        android:paddingVertical="12dp"
+        android:text="@string/start_new_round"
+        android:textColor="@color/white"
+        app:icon="@drawable/ic_add"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/taglineTextView" />
 
     <!-- Recent Rounds Title -->
     <TextView
         android:id="@+id/recentRoundsTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Recent Rounds"
-        android:textSize="20sp"
+        android:layout_marginTop="24dp"
+        android:text="@string/recent_rounds"
+        android:textColor="@color/textPrimary"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="#000000"
-        android:layout_marginTop="16dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/startNewRoundButton" />
 
-    <!-- Recent Rounds List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recentRoundsRecyclerView"
-        android:layout_width="match_parent"
+    <!-- Recent Rounds Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/recentRoundsCard"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:layout_constraintBottom_toTopOf="@+id/clearButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recentRoundsTitle">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recentRoundsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
+
+    </androidx.cardview.widget.CardView>
 
     <!-- Clear Button -->
     <Button
         android:id="@+id/clearButton"
-        android:layout_width="match_parent"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Clear Recent Rounds"
-        android:layout_marginTop="16dp" />
+        android:text="@string/clear_history"
+        android:textColor="@color/textSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

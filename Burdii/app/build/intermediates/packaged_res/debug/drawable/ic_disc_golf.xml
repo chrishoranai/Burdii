@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="240dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+
+    <!-- Orange/Pink gradient background -->
+    <path
+        android:pathData="M120,120m-100,0a100,100 0,1 1,200 0a100,100 0,1 1,-200 0"
+        android:fillColor="#FF9800">
+        <!-- <aapt:attr name="android:fillColor" xmlns:aapt="http://schemas.android.com/aapt">
+            <gradient
+                android:type="radial"
+                android:centerX="120"
+                android:centerY="120"
+                android:gradientRadius="100"
+                android:startColor="#FF5252"
+                android:centerColor="#FF9800"
+                android:endColor="#FFEB3B" />
+        </aapt:attr> -->
+    </path>
+
+    <!-- Pink cloud shapes -->
+    <path
+        android:pathData="M50,180c10,-5 20,-10 40,-5c20,5 30,10 50,5c20,-5 30,-10 50,-15"
+        android:fillColor="#E91E63"
+        android:alpha="0.4" />
+    
+    <path
+        android:pathData="M150,150c10,-5 20,-10 30,-5c10,5 15,10 25,5"
+        android:fillColor="#E91E63"
+        android:alpha="0.4" />
+        
+    <path
+        android:pathData="M230,120c-10,-5 -20,-10 -30,-5"
+        android:fillColor="#E91E63"
+        android:alpha="0.4" />
+
+    <!-- Black bird silhouette -->
+    <path
+        android:pathData="M150,75c-5,5 -10,10 -15,30c-2,10 -4,50 -5,60c-1,10 -2,20 -10,30c-5,5 -10,10 -15,15c-5,5 -10,15 -5,20c5,5 10,0 15,-5c5,-5 10,-10 15,-5c3,3 2,10 0,15c-2,5 -5,10 -10,15c-5,5 -10,10 -15,15c-5,5 -5,10 0,15c5,5 10,0 15,-5c5,-5 10,-10 15,-15c2,-2 4,-5 5,-10c-1,5 -2,10 -5,15c-3,5 -5,10 0,15c5,5 10,0 15,-5c5,-5 5,-10 5,-15c0,-5 -1,-10 0,-15c1,-5 2,-10 5,-15c3,-5 5,-10 5,-15c0,-5 -1,-10 0,-15c1,-5 2,-10 5,-15c3,-5 5,-10 5,-15c0,-5 -1,-10 0,-15c1,-5 2,-10 5,-15c3,-5 10,-10 15,-15c5,-5 10,-5 10,-10c0,-5 -5,-10 -10,-15c-5,-5 -10,-10 -15,-15c-5,-5 -10,-10 -15,-15c-5,-5 -10,-5 -15,0"
+        android:fillColor="#000000" />
+
+    <!-- Red eye -->
+    <path
+        android:pathData="M150,75m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"
+        android:fillColor="#FF0000" />
+
+</vector>
