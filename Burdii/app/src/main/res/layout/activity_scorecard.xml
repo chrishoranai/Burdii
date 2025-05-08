@@ -26,14 +26,26 @@
             android:padding="16dp">
 
             <TextView
-                android:id="@+id/currentHoleTextView"
+                android:id="@+id/roundNameTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/textPrimary"
-                android:textSize="20sp"
+                android:textColor="@color/colorPrimary"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                tools:text="New Round" />
+                
+            <TextView
+                android:id="@+id/currentHoleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/textPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/roundNameTextView"
                 tools:text="Current Hole: 1" />
 
             <TextView
@@ -41,20 +53,22 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Say 'Hey Birdie' when you're ready to input scores for this hole"
+                android:text="Enter scores for each player"
                 android:textColor="@color/textSecondary"
                 android:textSize="14sp"
+                android:padding="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/currentHoleTextView" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/voiceInputButton"
+            <Switch
+                android:id="@+id/voiceToggleSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Input Scores Manually"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:text="Voice Input"
+                android:textColor="@color/textPrimary"
+                android:checked="false"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/instructionsTextView" />
 

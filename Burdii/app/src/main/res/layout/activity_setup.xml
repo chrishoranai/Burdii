@@ -42,44 +42,81 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Number of Holes -->
+                <!-- Round Name Field -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/num_holes"
+                    android:hint="@string/round_name"
                     style="@style/Widget.Burdii.TextInputLayout">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/numHolesEditText"
+                        android:id="@+id/roundNameEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="number"
-                        android:text="18" />
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:text="New Round" />
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Number of Players -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
+                
+                <!-- Number of Holes Selector -->
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:hint="@string/num_players"
-                    style="@style/Widget.Burdii.TextInputLayout">
+                    android:text="@string/holes_selector_label"
+                    android:textColor="@color/textPrimary"
+                    android:textSize="16sp" />
+                    
+                <NumberPicker
+                    android:id="@+id/holesNumberPicker"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/numPlayersEditText"
+                <!-- Player Names Section -->
+                <TextView
+                    android:id="@+id/playerNamesSectionTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/who_is_playing"
+                    android:textColor="@color/textPrimary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                
+                <!-- Dynamic Player Names Container -->
+                <LinearLayout
+                    android:id="@+id/playerNamesContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="vertical">
+                    
+                    <!-- First player name field (always visible) -->
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="number"
-                        android:text="1" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:hint="Player 1"
+                        style="@style/Widget.Burdii.TextInputLayout">
 
-                <!-- Set Player Names Button -->
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/player1EditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPersonName"
+                            android:text="Player 1" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <!-- Add Player Button -->
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/setPlayerNamesButton"
+                    android:id="@+id/addPlayerButton"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/set_player_names" />
+                    android:layout_marginTop="8dp"
+                    android:text="@string/add_player" />
+                <!-- Set Player Names button removed; users can just use the text fields directly -->
 
                 <!-- Set Pars Button -->
                 <com.google.android.material.button.MaterialButton
@@ -92,55 +129,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Scoring Method Section -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/scoringMethodCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/white"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/courseInfoCard">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/input_method"
-                    android:textColor="@color/textPrimary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <RadioGroup
-                    android:id="@+id/inputMethodRadioGroup"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="vertical">
-
-                    <RadioButton
-                        android:id="@+id/voiceInputRadioButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:text="@string/input_method_voice" />
-
-                    <RadioButton
-                        android:id="@+id/manualInputRadioButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/input_method_manual" />
-                </RadioGroup>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        <!-- Voice input has been moved to the scorecard page -->
 
         <!-- Start Game Button -->
         <com.google.android.material.button.MaterialButton
@@ -153,7 +142,7 @@
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scoringMethodCard" />
+            app:layout_constraintTop_toBottomOf="@+id/courseInfoCard" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

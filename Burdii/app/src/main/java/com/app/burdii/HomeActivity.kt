@@ -64,7 +64,7 @@ class HomeActivity : AppCompatActivity() {
         }
         
         upgradeButton.setOnClickListener {
-            Toast.makeText(this, "Burdii Pro features are coming soon!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "All Burdii Pro features are currently available for free!", Toast.LENGTH_LONG).show()
         }
     }
 

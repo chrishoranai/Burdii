@@ -1771,6 +1771,7 @@
     <item name="tag_on_receive_content_mime_types" type="id"/>
     <item name="tag_screen_reader_focusable" type="id"/>
     <item name="tag_state_description" type="id"/>
+    <item name="tag_text_watchers" type="id"/>
     <item name="tag_transition_group" type="id"/>
     <item name="tag_unhandled_key_event_manager" type="id"/>
     <item name="tag_unhandled_key_listeners" type="id"/>
@@ -1928,14 +1929,14 @@
     <string name="exposed_dropdown_menu_content_description">Show dropdown menu</string>
     <string name="fab_transformation_scrim_behavior" translatable="false">com.google.android.material.transformation.FabTransformationScrimBehavior</string>
     <string name="fab_transformation_sheet_behavior" translatable="false">com.google.android.material.transformation.FabTransformationSheetBehavior</string>
-    <string name="game_finished">Game Finished</string>
     <string name="hide_bottom_view_on_scroll_behavior" translatable="false">com.google.android.material.behavior.HideBottomViewOnScrollBehavior</string>
     <string name="hole">Hole %1$d</string>
     <string name="hole_with_par">Hole %1$d (Par %2$d)</string>
+    <string name="holes_selector_label">Select Number of Holes</string>
     <string description="Content description for an icon that appears in the title area of a dialog" name="icon_content_description">Dialog Icon</string>
     <string name="input_method">How would you like to keep score?</string>
     <string name="input_method_manual">Manual</string>
-    <string name="input_method_voice">Voice (Pro - Coming Soon)</string>
+    <string name="input_method_voice">Voice</string>
     <string name="item_view_role_description">Tab</string>
     <string name="m3_exceed_max_badge_text_suffix" translatable="false"><ns2:g example="Some te" id="part of a long text">%1$s</ns2:g><ns2:g example="…" id="suffix">%2$s</ns2:g></string>
     <string name="m3_ref_typeface_brand_medium" translatable="false">sans-serif-medium</string>
@@ -2060,11 +2061,12 @@
     <string name="premium_feature_unlimited">Unlimited Rounds</string>
     <string name="premium_feature_voice">Voice Scorekeeping</string>
     <string name="premium_price">Pricing: TBD</string>
-    <string name="premium_restore_button">Restore (Coming Soon)</string>
+    <string name="premium_restore_button">Restore</string>
     <string name="premium_success">Purchase successful! Enjoy Burdii Pro.</string>
-    <string name="premium_title">Burdii Pro (Coming Soon)</string>
+    <string name="premium_title">Burdii Pro</string>
     <string name="recent_rounds">Recent Rounds</string>
-    <string name="round_finished">Round Finished</string>
+    <string name="round_completed">Round Completed</string>
+    <string name="round_name">What would you like to call this round?</string>
     <string name="score_not_caught">Sorry, I did not catch that. Please say the score again.</string>
     <string name="score_not_understood">Sorry, I did not understand. Please say the score again.</string>
     <string name="score_prompt">Tell me the score for %1$s on Hole %2$d</string>
@@ -2074,7 +2076,7 @@
   </string>
     <string description="Content description for the X button to clear text [CHAR_LIMIT=NONE]" name="searchview_clear_text_content_description">Clear text</string>
     <string description="Content description for the navigation button to return to the previous screen [CHAR_LIMIT=NONE]" name="searchview_navigation_content_description">Back</string>
-    <string name="set_pars">Set Par Values?</string>
+    <string name="set_pars">Set Par Values</string>
     <string name="set_player_names">Set Player Names</string>
     <string name="setup_title">Round Setup</string>
     <string description="Title of the side sheet&apos;s accessibility pane that is spoken by TalkBack when the side sheet appears on screen. [CHAR_LIMIT=NONE]" name="side_sheet_accessibility_pane_title">Side Sheet</string>
@@ -2083,7 +2085,7 @@
     <string name="start_round">Start Round</string>
     <string name="status_bar_notification_info_overflow">999+</string>
     <string name="total">Total</string>
-    <string name="upgrade_button">Burdii Pro (Coming Soon)</string>
+    <string name="upgrade_button">Burdii Pro</string>
     <string name="wake_word">Hey Birdie</string>
     <string name="who_is_playing">Who is Playing?</string>
     <style name="AlertDialog.AppCompat" parent="Base.AlertDialog.AppCompat"/>

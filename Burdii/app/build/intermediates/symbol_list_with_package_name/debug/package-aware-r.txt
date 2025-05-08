@@ -2912,6 +2912,9 @@ drawable design_password_eye
 drawable design_snackbar_background
 drawable gradient_background
 drawable grass_background
+drawable grid_cell_background
+drawable grid_header_background
+drawable grid_total_background
 drawable ic_add
 drawable ic_arrow_back_black_24
 drawable ic_bird
@@ -3078,6 +3081,7 @@ id action_text
 id actions
 id activity_chooser_view_content
 id add
+id addPlayerButton
 id alertTitle
 id aligned
 id all
@@ -3203,6 +3207,7 @@ id headerCard
 id header_title
 id hide_ime_id
 id hideable
+id holesNumberPicker
 id holesTextView
 id home
 id homeAsUp
@@ -3215,7 +3220,6 @@ id ignoreRequest
 id image
 id indeterminate
 id info
-id inputMethodRadioGroup
 id instructionsTextView
 id invisible
 id inward
@@ -3235,7 +3239,6 @@ id listMode
 id list_item
 id logoImageView
 id m3_side_sheet
-id manualInputRadioButton
 id marquee
 id masked
 id match_parent
@@ -3310,8 +3313,6 @@ id normal
 id notification_background
 id notification_main_column
 id notification_main_column_container
-id numHolesEditText
-id numPlayersEditText
 id off
 id on
 id open_search_bar_text_view
@@ -3342,6 +3343,9 @@ id pathRelative
 id peekHeight
 id percent
 id pin
+id player1EditText
+id playerNamesContainer
+id playerNamesSectionTitle
 id position
 id postLayout
 id premiumIcon
@@ -3363,6 +3367,8 @@ id right
 id rightToLeft
 id right_icon
 id right_side
+id roundNameEditText
+id roundNameTextView
 id rounded
 id row_index_key
 id save_non_transition_alpha
@@ -3372,7 +3378,6 @@ id scale
 id scoreTextView
 id scorecardCard
 id scorecardTable
-id scoringMethodCard
 id screen
 id scroll
 id scrollIndicatorDown
@@ -3393,7 +3398,6 @@ id select_dialog_listview
 id selected
 id selection_type
 id setParsButton
-id setPlayerNamesButton
 id setupTitleTextView
 id shortcut
 id showCustom
@@ -3441,6 +3445,7 @@ id tag_on_receive_content_listener
 id tag_on_receive_content_mime_types
 id tag_screen_reader_focusable
 id tag_state_description
+id tag_text_watchers
 id tag_transition_group
 id tag_unhandled_key_event_manager
 id tag_unhandled_key_listeners
@@ -3492,10 +3497,9 @@ id view_tree_saved_state_registry_owner
 id view_tree_view_model_store_owner
 id visible
 id visible_removing_fragment_view_tag
-id voiceInputButton
-id voiceInputRadioButton
 id voiceStatusCard
 id voiceStatusTextView
+id voiceToggleSwitch
 id withText
 id with_icon
 id withinBounds
@@ -3758,10 +3762,10 @@ string error_icon_content_description
 string exposed_dropdown_menu_content_description
 string fab_transformation_scrim_behavior
 string fab_transformation_sheet_behavior
-string game_finished
 string hide_bottom_view_on_scroll_behavior
 string hole
 string hole_with_par
+string holes_selector_label
 string icon_content_description
 string input_method
 string input_method_manual
@@ -3888,7 +3892,8 @@ string premium_restore_button
 string premium_success
 string premium_title
 string recent_rounds
-string round_finished
+string round_completed
+string round_name
 string score_not_caught
 string score_not_understood
 string score_prompt

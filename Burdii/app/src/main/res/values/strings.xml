@@ -8,18 +8,20 @@
     <string name="start_new_round">Start New Round</string>
     <string name="recent_rounds">Recent Rounds</string>
     <string name="clear_history">Clear History</string>
-    <string name="upgrade_button">Burdii Pro (Coming Soon)</string>
+    <string name="upgrade_button">Burdii Pro</string>
     
     <!-- Setup Screen -->
     <string name="setup_title">Round Setup</string>
+    <string name="round_name">What would you like to call this round?</string>
     <string name="num_holes">Number of Holes</string>
+    <string name="holes_selector_label">Select Number of Holes</string>
     <string name="num_players">Number of Players</string>
     <string name="who_is_playing">Who is Playing?</string>
     <string name="set_player_names">Set Player Names</string>
-    <string name="set_pars">Set Par Values?</string>
+    <string name="set_pars">Set Par Values</string>
     <string name="start_round">Start Round</string>
     <string name="input_method">How would you like to keep score?</string>
-    <string name="input_method_voice">Voice (Pro - Coming Soon)</string>
+    <string name="input_method_voice">Voice</string>
     <string name="input_method_manual">Manual</string>
     <string name="add_player">Add Another Player</string>
     
@@ -29,8 +31,7 @@
     <string name="hole_with_par">Hole %1$d (Par %2$d)</string>
     <string name="player">Player</string>
     <string name="total">Total</string>
-    <string name="round_finished">Round Finished</string>
-    <string name="game_finished">Game Finished</string>
+    <string name="round_completed">Round Completed</string>
     
     <!-- Voice Commands -->
     <string name="wake_word">Hey Birdie</string>
@@ -39,14 +40,14 @@
     <string name="score_not_caught">Sorry, I did not catch that. Please say the score again.</string>
     
     <!-- In-App Purchase -->
-    <string name="premium_title">Burdii Pro (Coming Soon)</string>
+    <string name="premium_title">Burdii Pro</string>
     <string name="premium_price">Pricing: TBD</string>
     <string name="premium_feature_voice">Voice Scorekeeping</string>
     <string name="premium_feature_ads">No Advertisements</string>
     <string name="premium_feature_unlimited">Unlimited Rounds</string>
     <string name="premium_feature_support">Priority Support</string>
     <string name="premium_buy_button">Learn More</string>
-    <string name="premium_restore_button">Restore (Coming Soon)</string>
+    <string name="premium_restore_button">Restore</string>
     <string name="premium_success">Purchase successful! Enjoy Burdii Pro.</string>
     <string name="premium_already_purchased">You already own Burdii Pro!</string>
     <string name="premium_failed">Purchase failed. Please try again later.</string>

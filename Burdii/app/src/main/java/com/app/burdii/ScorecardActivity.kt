@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,24 +18,26 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
+import com.google.android.material.button.MaterialButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.cardview.widget.CardView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
 import java.util.*
 
 class ScorecardActivity : AppCompatActivity() {
-    private lateinit var scorecardTable: TableLayout
     private lateinit var currentHoleTextView: TextView
+    private lateinit var scorecardTable: TableLayout
     private lateinit var micFeedbackCard: CardView
     private lateinit var voiceStatusCard: CardView
     private lateinit var voiceStatusTextView: TextView
-    private lateinit var voiceInputButton: Button
-    private lateinit var finishRoundButton: Button
+    private lateinit var voiceToggleSwitch: Switch
+    private lateinit var finishRoundButton: MaterialButton
     private lateinit var textToSpeech: TextToSpeech
     private lateinit var speechRecognizer: SpeechRecognizer
     private val handler = Handler(Looper.getMainLooper())
@@ -50,6 +53,9 @@ class ScorecardActivity : AppCompatActivity() {
     private var isListeningForWakeWord = true
     private var isAskingForScore = false
     private lateinit var scoringMethod: String
+    
+    // New voice recognition service
+    private lateinit var voiceRecognitionService: VoiceRecognitionService
 
     // --- SharedPreferences Constants and Gson --- 
     private val PREFS_FILENAME = "com.app.burdii.prefs"
@@ -70,26 +76,54 @@ class ScorecardActivity : AppCompatActivity() {
         micFeedbackCard = findViewById(R.id.micFeedbackCard)
         voiceStatusCard = findViewById(R.id.voiceStatusCard)
         voiceStatusTextView = findViewById(R.id.voiceStatusTextView)
-        voiceInputButton = findViewById(R.id.voiceInputButton)
+        voiceToggleSwitch = findViewById(R.id.voiceToggleSwitch)
         finishRoundButton = findViewById(R.id.finishRoundButton)
         micFeedbackCard.visibility = View.GONE
-        voiceStatusCard.visibility = View.VISIBLE
-        voiceStatusTextView.text = "Listening for 'Hey Birdie'"
+        
+        // Initially hide voice status until voice is enabled
+        voiceStatusCard.visibility = View.GONE
 
         // Retrieve data from intent
         numHoles = intent.getIntExtra("NUM_HOLES", 18) // Default to 18 if not found
+        val roundName = intent.getStringExtra("ROUND_NAME") ?: "New Round" // Default if not found
         playerNames = intent.getStringArrayExtra("PLAYER_NAMES") ?: arrayOf("Player 1") // Default if not found
         numPlayers = playerNames.size // Get numPlayers from the array size
         parValues = intent.getIntArrayExtra("PAR_VALUES") ?: IntArray(numHoles) { 3 } // Default par 3 if not found
         scoringMethod = intent.getStringExtra("SCORING_METHOD") ?: "MANUAL" // Default to MANUAL
+        
+        // Set round name as title
+        title = roundName
+        // Set round name if the TextView exists
+        findViewById<TextView>(R.id.roundNameTextView)?.text = roundName
 
-        // Check if voice feature is actually unlocked
-        if (scoringMethod == "VOICE") {
-            val prefs = getSharedPreferences("com.app.burdii.prefs", MODE_PRIVATE)
-            val unlocked = prefs.getBoolean("VOICE_UNLOCKED", false)
-            if (!unlocked) {
-                Toast.makeText(this, "Voice feature not unlocked. Switching to manual input.", Toast.LENGTH_LONG).show()
-                scoringMethod = "MANUAL"
+        // All features are available in testing phase
+        // Initialize UI based on selected scoring method
+        voiceToggleSwitch.isChecked = scoringMethod == "VOICE"
+        
+        // Set up toggle listener
+        voiceToggleSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                // Enable voice input
+                voiceStatusCard.visibility = View.VISIBLE
+                voiceStatusTextView.text = "Listening for 'Hey Birdie'"
+                startVoiceRecognitionService()
+            } else {
+                // Disable voice input, enable manual input
+                voiceStatusCard.visibility = View.GONE
+                if (::voiceRecognitionService.isInitialized) {
+                    // Stop the voice recognition service if it's running
+                    try {
+                        // For now just initialize a new instance which should stop any ongoing recognition
+                        voiceRecognitionService = VoiceRecognitionService(
+                            context = this,
+                            onScoresConfirmed = { _, _ -> },
+                            onStateChanged = { _, _ -> }
+                        )
+                    } catch (e: Exception) {
+                        // Ignore any errors while stopping
+                    }
+                }
+                enableManualInput()
             }
         }
 
@@ -101,33 +135,49 @@ class ScorecardActivity : AppCompatActivity() {
         // Setup the scorecard table
         setupScorecardTable()
 
-        // Initialize TextToSpeech
-        textToSpeech = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
+        // Initialize TextToSpeech (maintaining for backward compatibility)
+        textToSpeech = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 val result = textToSpeech.setLanguage(Locale.US)
                 if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.e("TTS_INIT", "The Language specified is not supported!")
-                    Toast.makeText(this, "TTS Language not supported.", Toast.LENGTH_SHORT).show()
-                } else {
-                    Log.i("TTS_INIT", "TTS Engine Initialized Successfully.")
+                    Log.e("TTS", "Language not supported")
                 }
             } else {
-                Log.e("TTS_INIT", "TTS Initialization Failed! Status: $status")
-                Toast.makeText(this, "TTS Initialization Failed.", Toast.LENGTH_SHORT).show()
+                Log.e("TTS", "Initialization failed")
             }
-        })
+        }
 
-        // Initialize SpeechRecognizer
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+        // Initialize SpeechRecognizer (maintaining for backward compatibility)
+        if (SpeechRecognizer.isRecognitionAvailable(this)) {
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+            setupSpeechRecognizerListener()
+        }
+        
+        // Initialize the new VoiceRecognitionService
+        if (scoringMethod == "VOICE") {
+            // Initialize the VoiceRecognitionService with callbacks
+            voiceRecognitionService = VoiceRecognitionService(
+                context = this,
+                onScoresConfirmed = { playerScores, holeNumber ->
+                    // Handle confirmed scores
+                    handleConfirmedScores(playerScores, holeNumber)
+                },
+                onStateChanged = { state, message ->
+                    // Update UI based on voice recognition state
+                    updateVoiceRecognitionUI(state, message)
+                }
+            )
+            
+            checkAndRequestPermissions()
+            // Service will be initialized after permissions are granted
+            // (handled in onRequestPermissionsResult)
+        }
         setupSpeechRecognizerListener()
 
         // Request permissions
         checkAndRequestPermissions()
 
-        // Setup button listeners
-        voiceInputButton.setOnClickListener {
-            switchToManualInput()
-        }
+        // Setup finish round button listener
         finishRoundButton.setOnClickListener {
             finishRound()
         }
@@ -148,12 +198,16 @@ class ScorecardActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, start listening in onResume
-                // No immediate action needed here, onResume will handle it
-                Toast.makeText(this, "Audio permission granted", Toast.LENGTH_SHORT).show()
+                Log.i("ScorecardActivity", "Audio permission granted")
+                if (scoringMethod == "VOICE") {
+                    // Start the new voice recognition service with the improved flow
+                    startVoiceRecognitionService()
+                }
             } else {
-                Toast.makeText(this, "Audio permission denied. Voice input disabled.", Toast.LENGTH_LONG).show()
-                // Handle permission denial (e.g., disable voice features)
+                Log.w("ScorecardActivity", "Audio permission denied - voice features unavailable")
+                // Permission denied - switch to manual input
+                scoringMethod = "MANUAL"
+                Toast.makeText(this, "Audio permission denied. Voice input disabled.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -189,8 +243,7 @@ class ScorecardActivity : AppCompatActivity() {
                 }
                 Log.e("SpeechRecognizer", "onError: $error - $errorMessage")
                 micFeedbackCard.visibility = View.GONE
-                voiceStatusTextView.text = "Error: $errorMessage. Tap to retry or use manual input."
-                voiceInputButton.text = "Retry Voice"
+                voiceStatusTextView.text = "Error: $errorMessage. Toggle voice off to use manual input."
                 // Reset state or provide retry mechanism
                 if (isListeningForWakeWord || isAskingForScore) {
                     // Potentially delay and restart listening, or switch to manual
@@ -266,24 +319,70 @@ class ScorecardActivity : AppCompatActivity() {
 
     // Sets up the scorecard table with headers and player rows
     private fun setupScorecardTable() {
+        // Clear any existing rows
+        scorecardTable.removeAllViews()
+        
+        // Add round name as title if needed (optional)
+        // Currently using the title bar to display the round name
         val headerRow = TableRow(this)
-        headerRow.addView(TextView(this).apply { text = "Player" })
+        
+        // Player column header
+        headerRow.addView(TextView(this).apply { 
+            text = "Player"
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
+            setPadding(16, 12, 16, 12)
+            gravity = Gravity.CENTER_VERTICAL
+            background = ContextCompat.getDrawable(context, R.drawable.grid_header_background)
+        })
+        
+        // Hole number headers
         for (h in 1..numHoles) {
-            headerRow.addView(TextView(this).apply { text = "H$h"; gravity = Gravity.CENTER })
+            headerRow.addView(TextView(this).apply { 
+                text = "H$h"
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
+                gravity = Gravity.CENTER
+                minWidth = 70 // Match the width of score cells
+                setPadding(8, 12, 8, 12)
+                background = ContextCompat.getDrawable(context, R.drawable.grid_header_background)
+            })
         }
-        headerRow.addView(TextView(this).apply { text = "Total"; gravity = Gravity.CENTER })
+        
+        // Total column header
+        headerRow.addView(TextView(this).apply { 
+            text = "Total"
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
+            gravity = Gravity.CENTER
+            minWidth = 80 // Slightly wider for totals
+            setPadding(8, 12, 8, 12)
+            background = ContextCompat.getDrawable(context, R.drawable.grid_header_background)
+        })
+        
         scorecardTable.addView(headerRow)
 
         for (p in 0 until numPlayers) {
             val row = TableRow(this)
-            row.addView(TextView(this).apply { text = playerNames[p] })
+            row.addView(TextView(this).apply {
+                text = playerNames[p]
+                setPadding(16, 8, 16, 8)
+                setTypeface(null, Typeface.BOLD)
+                gravity = Gravity.CENTER_VERTICAL
+            })
             for (h in 0 until numHoles) {
-                val editText = EditText(this)
-                editText.inputType = android.text.InputType.TYPE_CLASS_NUMBER
-                editText.gravity = Gravity.CENTER
-                // Initially not focusable for voice input mode
-                editText.isFocusable = false
-                editText.isFocusableInTouchMode = false
+                val editText = EditText(this).apply {
+                    inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                    gravity = Gravity.CENTER
+                    minWidth = 70 // Set minimum width for score cells
+                    setPadding(8, 8, 8, 8)
+                    // Add grid-like appearance with borders
+                    background = ContextCompat.getDrawable(context, R.drawable.grid_cell_background)
+                    // Initialize as enabled for manual input
+                    isEnabled = true
+                    isFocusable = true
+                    isFocusableInTouchMode = true
+                }
                 editText.addTextChangedListener(object : TextWatcher {
                     override fun afterTextChanged(s: Editable?) {
                         val text = s.toString()
@@ -301,30 +400,101 @@ class ScorecardActivity : AppCompatActivity() {
                 row.addView(editText)
                 scoreEditTexts[p][h] = editText
             }
-            val totalTextView = TextView(this)
-            totalTextView.text = "0"
+            // Create styled total cell with grid appearance
+            val totalTextView = TextView(this).apply {
+                text = "0"
+                gravity = Gravity.CENTER
+                minWidth = 80 // Slightly wider for total column
+                setPadding(8, 8, 8, 8)
+                setTypeface(null, Typeface.BOLD)
+                // Make the total column stand out with a different background
+                background = ContextCompat.getDrawable(context, R.drawable.grid_total_background)
+            }
             row.addView(totalTextView)
             totalTextViews[p] = totalTextView
             scorecardTable.addView(row)
         }
     }
 
+    /**
+     * Enable manual score input
+     */
+    private fun enableManualInput() {
+        // Update UI for manual input
+        micFeedbackCard.visibility = View.GONE
+        voiceStatusCard.visibility = View.GONE
+        
+        // Enable manual entry in EditTexts
+        for (player in 0 until numPlayers) {
+            for (hole in 0 until numHoles) {
+                scoreEditTexts[player][hole].isEnabled = true
+                
+                // Remove existing text watchers to avoid duplicates
+                val oldTextWatchers = scoreEditTexts[player][hole].getTag(R.id.tag_text_watchers)
+                if (oldTextWatchers is ArrayList<*>) {
+                    for (watcher in oldTextWatchers) {
+                        if (watcher is TextWatcher) {
+                            scoreEditTexts[player][hole].removeTextChangedListener(watcher)
+                        }
+                    }
+                }
+                
+                // Add text change listener to handle score updates
+                val textWatcher = object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        if (s.isNullOrEmpty()) return
+                        try {
+                            val score = s.toString().toInt()
+                            scores[player][hole] = score
+                            updateTotalScore(player)
+                            saveCurrentScores() // Save after each update
+                        } catch (e: NumberFormatException) {
+                            // Invalid input, clear it
+                            scoreEditTexts[player][hole].setText("")
+                        }
+                    }
+                    
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                }
+                
+                scoreEditTexts[player][hole].addTextChangedListener(textWatcher)
+                
+                // Store the text watcher for potential future removal
+                val textWatchers = ArrayList<TextWatcher>()
+                textWatchers.add(textWatcher)
+                scoreEditTexts[player][hole].setTag(R.id.tag_text_watchers, textWatchers)
+            }
+        }
+    }
+
     // Resets the voice input UI elements to their default state
     private fun resetVoiceInputUIState() {
-        voiceStatusTextView.text = "Listening for 'Hey Birdie'" // Or some default
-        voiceStatusCard.visibility = View.VISIBLE // Or GONE, depending on default
+        voiceStatusTextView.text = "Listening for 'Hey Birdie'" 
+        voiceStatusCard.visibility = if (voiceToggleSwitch.isChecked) View.VISIBLE else View.GONE
         micFeedbackCard.visibility = View.GONE
-        voiceInputButton.text = "Voice Input" // Or your default text
+        
         // Ensure flags are reset so recognizer restarts correctly
         isListeningForWakeWord = true
         isAskingForScore = false
-        // Make EditTexts focusable again if needed for manual input fallback
-        setManualInputEnabled(true)
+        
+        // Enable or disable manual input based on voice toggle state
+        if (voiceToggleSwitch.isChecked) {
+            // Voice mode - disable manual input
+            for (player in 0 until numPlayers) {
+                for (hole in 0 until numHoles) {
+                    scoreEditTexts[player][hole].isEnabled = false
+                }
+            }
+        } else {
+            // Manual mode - enable input fields
+            enableManualInput()
+        }
     }
 
-    // Starts listening for the wake word "Hey Birdie"
+    // Starts listening for the wake word "Hey Birdie" - Legacy implementation
     private fun startListeningForWakeWord() {
-        Log.i("VoiceInput", "Attempting to start listening for WAKE WORD.")
+        Log.i("VoiceInput", "Using legacy wake word detection.")
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
             if (!SpeechRecognizer.isRecognitionAvailable(this)) {
                 Toast.makeText(this, "Speech recognition is not available on this device.", Toast.LENGTH_LONG).show()
@@ -335,8 +505,12 @@ class ScorecardActivity : AppCompatActivity() {
 
             isListeningForWakeWord = true
             isAskingForScore = false // Ensure correct state
-            // Make EditTexts non-focusable when listening for wake word
-            setManualInputEnabled(false)
+            // Disable manual input when using voice
+            for (player in 0 until numPlayers) {
+                for (hole in 0 until numHoles) {
+                    scoreEditTexts[player][hole].isEnabled = false
+                }
+            }
             voiceStatusCard.visibility = View.VISIBLE
             voiceStatusTextView.text = "Listening for 'Hey Birdie'"
             val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
@@ -472,33 +646,31 @@ class ScorecardActivity : AppCompatActivity() {
         // Update UI
         micFeedbackCard.visibility = View.GONE
         voiceStatusCard.visibility = View.GONE // Hide voice status
+        
+        // Set toggle switch to off position
+        voiceToggleSwitch.isChecked = false
 
-        // Enable manual input for the current hole
-        setManualInputEnabled(true, currentHole -1) // Enable for current hole index
+        // Enable manual input for all holes
+        enableManualInput()
 
         // Optionally focus the first player's EditText for the current hole
         if (numPlayers > 0 && currentHole > 0 && currentHole <= numHoles) {
             scoreEditTexts[0][currentHole - 1].requestFocus()
-            // Consider showing the keyboard - requires InputMethodManager
         }
-        Toast.makeText(this, "Manual input enabled for Hole $currentHole", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Manual input enabled", Toast.LENGTH_SHORT).show()
     }
 
-    // Enable or disable manual input for the specified hole(s)
-    private fun setManualInputEnabled(enabled: Boolean, holeIndex: Int? = null) {
+    // Enable editing for a specific hole or all holes
+    private fun enableEditingForHole(holeIndex: Int? = null) {
         for (p in 0 until numPlayers) {
             for (h in 0 until numHoles) {
                 val editText = scoreEditTexts[p][h]
-                // Enable/disable only for the specified hole, or all if holeIndex is null
+                // Enable only for the specified hole, or all if holeIndex is null
                 if (holeIndex == null || h == holeIndex) {
-                    editText.isFocusable = enabled
-                    editText.isFocusableInTouchMode = enabled
+                    editText.isEnabled = true
                 } else {
-                    // Ensure other holes remain non-focusable if enabling only one hole
-                    if (enabled) {
-                        editText.isFocusable = false
-                        editText.isFocusableInTouchMode = false
-                    }
+                    // Keep other holes disabled if focusing on one hole
+                    editText.isEnabled = false
                 }
             }
         }
@@ -574,23 +746,48 @@ class ScorecardActivity : AppCompatActivity() {
     // Cleanup resources
     override fun onDestroy() {
         super.onDestroy()
-        speechRecognizer.stopListening()
-        speechRecognizer.destroy()
-        textToSpeech.stop()
-        textToSpeech.shutdown()
+        // Clean up legacy resources
+        if (::speechRecognizer.isInitialized) {
+            speechRecognizer.stopListening()
+            speechRecognizer.destroy()
+        }
+        if (::textToSpeech.isInitialized) {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
+        
+        // Clean up new voice recognition service
+        if (::voiceRecognitionService.isInitialized) {
+            voiceRecognitionService.release()
+        }
+        
         handler.removeCallbacksAndMessages(null)
     }
 
     override fun onPause() {
         super.onPause()
+        // Pause voice recognition unless we're in explicit VOICE mode
         if (scoringMethod != "VOICE") {
-            speechRecognizer.stopListening()
-            textToSpeech.stop() // Stop any ongoing TTS
+            // Clean up legacy components
+            if (::speechRecognizer.isInitialized) {
+                speechRecognizer.stopListening()
+            }
+            if (::textToSpeech.isInitialized) {
+                textToSpeech.stop() // Stop any ongoing TTS
+            }
+            
+            // Update UI
             micFeedbackCard.visibility = View.GONE // Hide feedback
             voiceStatusCard.visibility = View.GONE // Hide status card
-            isListeningForWakeWord = false // Reset state flags if needed
+            
+            // Reset state flags
+            isListeningForWakeWord = false
             isAskingForScore = false
+        } else {
+            // We're in voice mode, but we're pausing the activity
+            // Don't stop voice recognition service as it should continue in background
         }
+        
         handler.removeCallbacksAndMessages(null)
     }
 
@@ -598,13 +795,145 @@ class ScorecardActivity : AppCompatActivity() {
         super.onResume()
         // Restart listening for the wake word if permission is granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            // Check if we should be listening or if manual mode was active
-            // For simplicity, always restart wake word listening on resume for now.
-            // A more robust solution might save/restore the input mode state.
-            startListeningForWakeWord() // Start listening when activity resumes
+            if (scoringMethod == "VOICE" && ::voiceRecognitionService.isInitialized) {
+                // Resume using the new service
+                voiceRecognitionService.startListeningForWakeWord()
+            } else {
+                // Fallback to old implementation
+                startListeningForWakeWord()
+            }
         } else {
             // Optional: Inform user or request permission again if it was denied previously
             // checkAndRequestPermissions()
+        }
+    }
+    
+    /**
+     * Handle confirmed scores from the VoiceRecognitionService
+     */
+    private fun handleConfirmedScores(playerScores: Map<String, Int>, holeNumber: Int) {
+        Log.d("VoiceInput", "Confirmed scores for hole $holeNumber: $playerScores")
+        
+        val holeIndex = holeNumber - 1
+        if (holeIndex < 0 || holeIndex >= numHoles) {
+            Log.e("VoiceInput", "Invalid hole number: $holeNumber")
+            return
+        }
+        
+        // Match player names from voice input to our app's player names
+        // This handles cases where voice recognition might not match exact player names
+        for ((voicePlayerName, score) in playerScores) {
+            // Find matching player in our list (case-insensitive partial match)
+            val playerIndex = playerNames.indexOfFirst { playerName ->
+                playerName.contains(voicePlayerName, ignoreCase = true) || 
+                voicePlayerName.contains(playerName, ignoreCase = true)
+            }
+            
+            if (playerIndex != -1) {
+                // Valid player found, update score
+                scores[playerIndex][holeIndex] = score
+                scoreEditTexts[playerIndex][holeIndex].setText(score.toString())
+                updateTotalScore(playerIndex)
+            } else {
+                Log.w("VoiceInput", "Couldn't match voice player name: $voicePlayerName to any known player")
+            }
+        }
+        
+        // Update UI to reflect current hole
+        currentHole = holeNumber + 1 // Move to next hole
+        if (currentHole <= numHoles) {
+            currentHoleTextView.text = "Hole $currentHole / $numHoles"
+        } else {
+            // Manual mode
+            Toast.makeText(this, "Switching to manual input mode.", Toast.LENGTH_SHORT).show()
+            voiceToggleSwitch.isChecked = false
+            currentHole = numHoles
+            currentHoleTextView.text = "Hole $currentHole / $numHoles"
+        }
+        
+        // Save the current scores for persistence
+        saveCurrentScores()
+    }
+    
+    /**
+     * Start the Voice Recognition Service
+     * This initializes the service and begins listening for the wake word
+     */
+    private fun startVoiceRecognitionService() {
+        if (!::voiceRecognitionService.isInitialized) {
+            // Initialize the VoiceRecognitionService with callbacks
+            voiceRecognitionService = VoiceRecognitionService(
+                context = this,
+                onScoresConfirmed = { playerScores, holeNumber ->
+                    // Handle confirmed scores
+                    handleConfirmedScores(playerScores, holeNumber)
+                },
+                onStateChanged = { state, message ->
+                    // Update UI based on voice recognition state
+                    updateVoiceRecognitionUI(state, message)
+                }
+            )
+        }
+        
+        // Initialize and start the service
+        voiceRecognitionService.initialize()
+        voiceRecognitionService.setCurrentHoleNumber(currentHole)
+        voiceRecognitionService.startListeningForWakeWord()
+        
+        // Update UI state
+        voiceStatusCard.visibility = View.VISIBLE
+        voiceStatusTextView.text = "Listening for 'Hey Birdie'"
+        micFeedbackCard.visibility = View.GONE
+        
+        // Disable manual input fields when in voice mode
+        for (player in 0 until numPlayers) {
+            for (hole in 0 until numHoles) {
+                scoreEditTexts[player][hole].isEnabled = false
+            }
+        }
+    }
+
+    /**
+     * Update UI based on voice recognition state changes
+     */
+    private fun updateVoiceRecognitionUI(state: VoiceRecognitionService.VoiceState, message: String) {
+        runOnUiThread {
+            voiceStatusCard.visibility = View.VISIBLE
+            voiceStatusTextView.text = message
+            
+            when (state) {
+                VoiceRecognitionService.VoiceState.ACTIVATION_STATE -> {
+                    // Listening for wake word
+                    micFeedbackCard.visibility = View.GONE
+                    // Disable manual input when in voice mode
+                    for (player in 0 until numPlayers) {
+                        for (hole in 0 until numHoles) {
+                            scoreEditTexts[player][hole].isEnabled = false
+                        }
+                    }
+                }
+                VoiceRecognitionService.VoiceState.SCORE_INQUIRY_STATE,
+                VoiceRecognitionService.VoiceState.CONFIRMATION_STATE -> {
+                    // System is speaking
+                    micFeedbackCard.visibility = View.GONE
+                }
+                VoiceRecognitionService.VoiceState.SCORE_INPUT_PROCESSING,
+                VoiceRecognitionService.VoiceState.CONFIRMATION_HANDLING -> {
+                    // Listening for user input
+                    micFeedbackCard.visibility = View.VISIBLE
+                }
+                VoiceRecognitionService.VoiceState.ERROR_STATE -> {
+                    // Error occurred
+                    micFeedbackCard.visibility = View.GONE
+                    Toast.makeText(this, "Voice recognition error: $message", Toast.LENGTH_SHORT).show()
+                    // Show error to user but keep voice mode if still toggled on
+                    if (voiceToggleSwitch.isChecked) {
+                        Toast.makeText(this, "Voice recognition had an issue. Try again or switch to manual input.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        enableManualInput()
+                    }
+                }
+            }
         }
     }
 }

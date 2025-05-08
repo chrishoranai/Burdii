@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -15,21 +16,22 @@ import com.google.android.material.textfield.TextInputLayout
 
 /**
  * SetupActivity - Configures a new disc golf round
- * - Sets number of holes and players
- * - Configures player names and optional par values
+ * - Sets number of holes
+ * - Configures player names dynamically
+ * - Configures optional par values
  * - Selects scoring method (voice or manual)
  */
 class SetupActivity : AppCompatActivity() {
-    private lateinit var numHolesEditText: TextInputEditText
-    private lateinit var numPlayersEditText: TextInputEditText
-    private lateinit var setPlayerNamesButton: MaterialButton
+    private lateinit var roundNameEditText: TextInputEditText
+    private lateinit var holesNumberPicker: NumberPicker
+    private lateinit var player1EditText: TextInputEditText
+    private lateinit var playerNamesContainer: LinearLayout
+    private lateinit var addPlayerButton: MaterialButton
     private lateinit var setParsButton: MaterialButton
     private lateinit var startGameButton: MaterialButton
-    private lateinit var voiceInputRadioButton: RadioButton
-    private lateinit var manualInputRadioButton: RadioButton
-    private lateinit var inputMethodRadioGroup: RadioGroup
+    // Voice input is now toggled on the scorecard page
     
-    private lateinit var playerNames: Array<String>
+    private var playerCount = 1 // Start with one player
     private var pars: IntArray? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,47 +39,33 @@ class SetupActivity : AppCompatActivity() {
         setContentView(R.layout.activity_setup)
 
         // Initialize UI components
-        numHolesEditText = findViewById(R.id.numHolesEditText)
-        numPlayersEditText = findViewById(R.id.numPlayersEditText)
-        setPlayerNamesButton = findViewById(R.id.setPlayerNamesButton)
+        roundNameEditText = findViewById(R.id.roundNameEditText)
+        holesNumberPicker = findViewById(R.id.holesNumberPicker)
+        player1EditText = findViewById(R.id.player1EditText)
+        playerNamesContainer = findViewById(R.id.playerNamesContainer)
+        addPlayerButton = findViewById(R.id.addPlayerButton)
         setParsButton = findViewById(R.id.setParsButton)
         startGameButton = findViewById(R.id.startGameButton)
-        voiceInputRadioButton = findViewById(R.id.voiceInputRadioButton)
-        manualInputRadioButton = findViewById(R.id.manualInputRadioButton)
-        inputMethodRadioGroup = findViewById(R.id.inputMethodRadioGroup)
-
-        // Initial UI setup - Voice option disabled
-        voiceInputRadioButton.isEnabled = false // Disable voice input
-        manualInputRadioButton.isChecked = true
-
-        // Listener for input method changes
-        inputMethodRadioGroup.setOnCheckedChangeListener { group, checkedId ->
-            if (checkedId == R.id.voiceInputRadioButton) {
-                // If voice is selected, it's disabled, so show a toast and revert
-                Toast.makeText(this, "Voice input is a Pro feature, coming soon!", Toast.LENGTH_LONG).show()
-                manualInputRadioButton.isChecked = true // Revert to manual
-            }
+        
+        // Setup number picker for holes
+        holesNumberPicker.apply {
+            minValue = 1
+            maxValue = 99
+            value = 18 // Default to 18 holes
+            wrapSelectorWheel = false
         }
+        
+        // Voice input is now toggled on the scorecard page, not here
 
-        // Set player names button click handler
-        setPlayerNamesButton.setOnClickListener {
-            val numPlayersStr = numPlayersEditText.text.toString()
-            if (numPlayersStr.isEmpty()) {
-                Toast.makeText(this, "Please enter number of players", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val numPlayers = numPlayersStr.toInt()
-            showPlayerNamesDialog(numPlayers)
+        // Add player button click handler
+        addPlayerButton.setOnClickListener {
+            playerCount++
+            addPlayerNameField(playerCount)
         }
 
         // Set pars button click handler
         setParsButton.setOnClickListener {
-            val numHolesStr = numHolesEditText.text.toString()
-            if (numHolesStr.isEmpty()) {
-                Toast.makeText(this, "Please enter number of holes", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val numHoles = numHolesStr.toInt()
+            val numHoles = holesNumberPicker.value
             showParsDialog(numHoles)
         }
 
@@ -93,29 +81,15 @@ class SetupActivity : AppCompatActivity() {
      * Validates all required inputs before starting the game
      */
     private fun validateInputs(): Boolean {
-        val numHolesStr = numHolesEditText.text.toString()
-        val numPlayersStr = numPlayersEditText.text.toString()
-        
-        if (numHolesStr.isEmpty() || numPlayersStr.isEmpty()) {
-            Toast.makeText(this, "Please enter number of holes and players", Toast.LENGTH_SHORT).show()
+        // Check if round name is entered
+        if (roundNameEditText.text.toString().trim().isEmpty()) {
+            Toast.makeText(this, "Please enter a name for this round", Toast.LENGTH_SHORT).show()
             return false
         }
         
-        val numHoles = numHolesStr.toInt()
-        val numPlayers = numPlayersStr.toInt()
-        
-        if (numHoles <= 0) {
-            Toast.makeText(this, "Number of holes must be greater than 0", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        
-        if (numPlayers <= 0) {
-            Toast.makeText(this, "Number of players must be greater than 0", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        
-        if (!::playerNames.isInitialized || playerNames.size != numPlayers) {
-            Toast.makeText(this, "Please set player names", Toast.LENGTH_SHORT).show()
+        // Check if at least one player name is entered
+        if (player1EditText.text.toString().trim().isEmpty()) {
+            Toast.makeText(this, "Please enter at least one player name", Toast.LENGTH_SHORT).show()
             return false
         }
         
@@ -126,133 +100,93 @@ class SetupActivity : AppCompatActivity() {
      * Starts the scorecard activity with all configured settings
      */
     private fun startGame() {
-        val numHolesStr = numHolesEditText.text.toString()
+        val numHoles = holesNumberPicker.value
+        val roundName = roundNameEditText.text.toString().trim()
         
-        // Should be safe to assume numHoles/numPlayers are parsed correctly
-        // based on validateInputs() passing before this is called.
-        val numHoles = numHolesStr.toInt()
-
-        val intent = Intent(this, ScorecardActivity::class.java).apply {
-            putExtra("NUM_HOLES", numHoles)
-            putExtra("NUM_PLAYERS", numPlayersEditText.text.toString().toInt())
-            putExtra("PLAYER_NAMES", playerNames)
-            
-            // Ensure parValues is initialized before passing (it might not be if 'Set Pars' wasn't clicked)
-            // Pass a default array or handle null in ScorecardActivity if pars weren't set.
-            val parsToPass = if (pars != null) pars else IntArray(numHoles) { 3 } // Default par 3 if not set
-            putExtra("PAR_VALUES", parsToPass)
-            
-            val selectedScoringMethod = when {
-                voiceInputRadioButton.isChecked -> "VOICE"
-                manualInputRadioButton.isChecked -> "MANUAL"
-                else -> "MANUAL" // Default to manual if somehow none is checked
-            }
-            putExtra("SCORING_METHOD", selectedScoringMethod)
-        }
+        // Collect player names from all text fields
+        val playerNames = collectPlayerNames()
+        
+        // Create intent and add data
+        val intent = Intent(this, ScorecardActivity::class.java)
+        intent.putExtra("NUM_HOLES", numHoles)
+        intent.putExtra("ROUND_NAME", roundName)
+        intent.putExtra("PLAYER_NAMES", playerNames.toTypedArray())
+        
+        // Ensure parValues is initialized before passing
+        val parsToPass = if (pars != null) pars else IntArray(numHoles) { 3 } // Default par 3 if not set
+        intent.putExtra("PAR_VALUES", parsToPass)
+        
+        // Always default to manual input, voice can be toggled on the scorecard page
+        intent.putExtra("SCORING_METHOD", "MANUAL")
         
         startActivity(intent)
     }
-
+    
     /**
-     * Dialog to input player names with improved UI
+     * Collects player names from all the dynamically added text fields
      */
-    private fun showPlayerNamesDialog(numPlayers: Int) {
-        val scrollView = ScrollView(this)
-        val containerLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16))
+    private fun collectPlayerNames(): List<String> {
+        val names = mutableListOf<String>()
+        
+        // Add the first player (always present)
+        val player1Name = player1EditText.text.toString().trim()
+        if (player1Name.isNotEmpty()) {
+            names.add(player1Name)
         }
         
-        scrollView.addView(containerLayout)
-        
-        val title = TextView(this).apply {
-            text = "Set Player Names"
-            textSize = 18f
-            setTextColor(ContextCompat.getColor(context, R.color.textPrimary))
-            gravity = Gravity.CENTER
-            setPadding(0, 0, 0, dpToPx(16))
+        // Add names from dynamically added fields
+        for (i in 2..playerCount) {
+            val playerEditText = playerNamesContainer.findViewWithTag<TextInputEditText>("player_$i")
+            playerEditText?.let {
+                val playerName = it.text.toString().trim()
+                if (playerName.isNotEmpty()) {
+                    names.add(playerName)
+                }
+            }
         }
         
-        containerLayout.addView(title)
-        
-        // Change from val to var to allow adding elements later
-        var inputLayouts = Array(numPlayers) { index ->
-            val layout = TextInputLayout(this, null, com.google.android.material.R.style.Widget_MaterialComponents_TextInputLayout_OutlinedBox).apply {
-                hint = "Player ${index + 1}"
-            }
-            
-            val editText = TextInputEditText(this).apply {
-                setSingleLine(true)
-                setText(if (::playerNames.isInitialized && index < playerNames.size) playerNames[index] else "")
-            }
-            
-            layout.addView(editText)
-            containerLayout.addView(layout)
-            
-            // Add space between items
-            val space = Space(this)
-            space.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dpToPx(8))
-            containerLayout.addView(space)
-            
-            layout to editText
-        }
-        
-        val addPlayerButton = MaterialButton(this, null, com.google.android.material.R.style.Widget_MaterialComponents_Button_TextButton).apply {
-            text = getString(R.string.add_player)
-            icon = ContextCompat.getDrawable(context, R.drawable.ic_add)
-            iconGravity = MaterialButton.ICON_GRAVITY_START
-            setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8))
-        }
-        
-        containerLayout.addView(addPlayerButton)
-        
-        // Button to add another player
-        addPlayerButton.setOnClickListener {
-            val newIndex = inputLayouts.size
-            
-            val layout = TextInputLayout(this, null, com.google.android.material.R.style.Widget_MaterialComponents_TextInputLayout_OutlinedBox).apply {
-                hint = "Player ${newIndex + 1}"
-            }
-            
-            val editText = TextInputEditText(this).apply {
-                setSingleLine(true)
-            }
-            
-            layout.addView(editText)
-            
-            // Insert the new layout before the button
-            containerLayout.removeView(addPlayerButton)
-            containerLayout.addView(layout)
-            
-            // Add space
-            val space = Space(this)
-            space.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dpToPx(8))
-            containerLayout.addView(space)
-            
-            // Add the button back
-            containerLayout.addView(addPlayerButton)
-            
-            inputLayouts += layout to editText
-        }
-        
-        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
-            .setView(scrollView)
-            .setPositiveButton("OK") { _, _ ->
-                // Explicitly use 'this' to refer to the class member
-                this.playerNames = inputLayouts.map { pair ->
-                    val (_, editText) = pair
-                    editText.text.toString().ifEmpty { "Player ${inputLayouts.indexOf(pair) + 1}" } 
-                }.toTypedArray()
-                
-                // Update the player count to match the number of names
-                numPlayersEditText.setText(playerNames.size.toString())
-            }
-            .setNegativeButton("Cancel", null)
-            .create()
-            
-        dialog.show()
+        return names
     }
-
+    
+    /**
+     * Adds a new player name field to the container
+     */
+    private fun addPlayerNameField(playerNumber: Int) {
+        // Create a new TextInputLayout
+        val inputLayout = TextInputLayout(this, null, com.google.android.material.R.style.Widget_MaterialComponents_TextInputLayout_OutlinedBox).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = dpToPx(8)
+                // Add horizontal padding for subtle UI improvement
+                marginStart = dpToPx(2)
+                marginEnd = dpToPx(2)
+            }
+            hint = "Player $playerNumber"
+        }
+        
+        // Create a new TextInputEditText
+        val editText = TextInputEditText(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            inputType = android.text.InputType.TYPE_TEXT_VARIATION_PERSON_NAME
+            setText("Player $playerNumber")
+            tag = "player_$playerNumber" // Tag for later retrieval
+            id = View.generateViewId() // Generate a unique ID
+            // Add subtle padding for improved text layout
+            setPadding(dpToPx(16), paddingTop, dpToPx(16), paddingBottom)
+        }
+        
+        // Add EditText to the TextInputLayout
+        inputLayout.addView(editText)
+        
+        // Add the TextInputLayout to the container
+        playerNamesContainer.addView(inputLayout)
+    }
+    
     /**
      * Dialog to input par values with improved UI
      */
@@ -261,7 +195,7 @@ class SetupActivity : AppCompatActivity() {
         val scrollView = ScrollView(this)
         val containerLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16))
+            setPadding(dpToPx(24), dpToPx(16), dpToPx(24), dpToPx(16)) // Using 24dp horizontal padding per user preference
         }
         
         scrollView.addView(containerLayout)
@@ -280,13 +214,15 @@ class SetupActivity : AppCompatActivity() {
             val holeCard = CardView(this).apply {
                 radius = dpToPx(8).toFloat()
                 cardElevation = dpToPx(2).toFloat()
-                setContentPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8))
+                setContentPadding(dpToPx(12), dpToPx(8), dpToPx(12), dpToPx(8))
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, 
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply {
                     setMargins(0, 0, 0, dpToPx(8))
                 }
+                // Use subtle off-white background per user preference
+                setCardBackgroundColor(resources.getColor(android.R.color.white))
             }
             
             val holeLayout = LinearLayout(this).apply {
