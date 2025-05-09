@@ -187,8 +187,9 @@ class VoiceRecognitionService(
      * Start listening for score input
      */
     private fun startListeningForScoreInput() {
+        Log.d(TAG, "startListeningForScoreInput called. Current state before change: $currentState") // Added log
         currentState = VoiceState.SCORE_INPUT_PROCESSING
-        onStateChanged(currentState, "Listening for player scores")
+        onStateChanged(currentState, "Listening for scores...")
         
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
@@ -456,6 +457,7 @@ class VoiceRecognitionService(
             }
             
             override fun onResults(results: Bundle?) {
+                Log.d(TAG, "onResults called. Current state: $currentState") // Added log
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 if (matches.isNullOrEmpty()) {
                     Log.e(TAG, "No speech recognition results")
@@ -467,6 +469,7 @@ class VoiceRecognitionService(
                 
                 when (currentState) {
                     VoiceState.ACTIVATION_STATE -> {
+                        Log.d(TAG, "onResults: ACTIVATION_STATE - spokenText: '$spokenText'") // Added log
                         if (spokenText.contains("hey birdie")) {
                             Log.d(TAG, "Wake word detected")
                             startScoreInquiry()
