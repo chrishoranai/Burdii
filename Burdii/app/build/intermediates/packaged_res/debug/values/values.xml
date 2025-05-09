@@ -3,10 +3,16 @@
     <color name="backgroundCard">#FFFFFF</color>
     <color name="backgroundMint">#E8F5E9</color>
     <color name="black">#FF000000</color>
+    <color name="burdii_card_background_off_white">#FAFAFA</color>
     <color name="colorAccent">#FF5252</color>
     <color name="colorPrimary">#8BC34A</color>
     <color name="colorPrimaryDark">#689F38</color>
     <color name="colorSecondary">#FF9800</color>
+    <color name="dark_blue">#1976D2</color>
+    <color name="dark_red">#D32F2F</color>
+    <color name="gold">#FFD700</color>
+    <color name="light_blue">#BBDEFB</color>
+    <color name="light_red">#FFCDD2</color>
     <color name="scoreNegative">#F44336</color>
     <color name="scoreNeutral">#9E9E9E</color>
     <color name="scorePositive">#4CAF50</color>

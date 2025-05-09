@@ -7,9 +7,18 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.app.burdii.Round
 
-class RoundAdapter(private val rounds: List<Round>) : RecyclerView.Adapter<RoundAdapter.ViewHolder>() {
+/**
+ * Adapter for the recent rounds list.
+ * @param rounds list of rounds to display
+ * @param onRoundClicked callback invoked when a round is selected
+ */
+class RoundAdapter(
+    private val rounds: List<Round>,
+    private val onRoundClicked: (Round) -> Unit = {}
+) : RecyclerView.Adapter<RoundAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val nameTextView: TextView = view.findViewById(R.id.nameTextView)
         val dateTextView: TextView = view.findViewById(R.id.dateTextView)
         val scoreTextView: TextView = view.findViewById(R.id.scoreTextView)
         val holesTextView: TextView = view.findViewById(R.id.holesTextView)
@@ -22,9 +31,12 @@ class RoundAdapter(private val rounds: List<Round>) : RecyclerView.Adapter<Round
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val round = rounds[position]
+        holder.nameTextView.text = round.name
         holder.dateTextView.text = round.date
         holder.scoreTextView.text = round.scoreChange
         holder.holesTextView.text = round.holesPlayed
+
+        holder.itemView.setOnClickListener { onRoundClicked(round) }
     }
 
     override fun getItemCount(): Int = rounds.size

@@ -1,19 +1,23 @@
 package com.app.burdii
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+
+// FinalScoreActivity is in the same package; explicit import not required.
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var recentRoundsRecyclerView: RecyclerView
@@ -35,7 +39,12 @@ class HomeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_home)
         
         // Apply fade in animation
-        overridePendingTransition(R.anim.fade_in, 0)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, R.anim.fade_in, 0)
+        } else {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(R.anim.fade_in, 0)
+        }
 
         // Initialize views
         recentRoundsRecyclerView = findViewById(R.id.recentRoundsRecyclerView)
@@ -46,8 +55,8 @@ class HomeActivity : AppCompatActivity() {
         // Load rounds from SharedPreferences instead of sample data
         roundsList = loadRounds().toMutableList()
 
-        // Set up RecyclerView with adapter
-        adapter = RoundAdapter(roundsList)
+        // Set up RecyclerView with adapter and click handling
+        adapter = RoundAdapter(roundsList) { round -> onRoundSelected(round) }
         recentRoundsRecyclerView.adapter = adapter
         recentRoundsRecyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -99,10 +108,10 @@ class HomeActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Clear History")
             .setMessage("Are you sure you want to clear all round history?")
-            .setPositiveButton("Yes") { dialog, which ->
+            .setPositiveButton("Yes") { _, _ ->
                 clearHistory()
             }
-            .setNegativeButton("No") { dialog, which ->
+            .setNegativeButton("No") { dialog, _ ->
                 // Optionally, handle the "No" case, or just dismiss
                 dialog.dismiss()
             }
@@ -125,5 +134,23 @@ class HomeActivity : AppCompatActivity() {
         roundsList.clear()
         roundsList.addAll(loadRounds())
         adapter.notifyDataSetChanged()
+    }
+
+    /**
+     * Handle click on a round item.
+     * If the round is complete open final score page; otherwise resume.
+     */
+    private fun onRoundSelected(round: Round) {
+        if (round.isComplete) {
+            val intent = Intent(this, FinalScoreActivity::class.java)
+            intent.putExtra("ROUND_NAME", round.name)
+            // Additional data can be passed later (scores etc.)
+            startActivity(intent)
+        } else {
+            // Resume incomplete round
+            val intent = Intent(this, ScorecardActivity::class.java)
+            intent.putExtra("RESUME_ROUND_NAME", round.name)
+            startActivity(intent)
+        }
     }
 }

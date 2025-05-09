@@ -1,9 +1,11 @@
 package com.app.burdii
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
 
 /**
@@ -11,7 +13,9 @@ import androidx.appcompat.app.AppCompatActivity
  * Displays the app logo and transitions to the HomeActivity after a short delay
  */
 class SplashActivity : AppCompatActivity() {
-    private val SPLASH_DELAY = 4000L // 4 seconds delay
+    companion object {
+        private const val SPLASH_DELAY = 3000L // 3 seconds delay
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,11 +23,30 @@ class SplashActivity : AppCompatActivity() {
         
         // Delayed transition to HomeActivity
         Handler(Looper.getMainLooper()).postDelayed({
-            val intent = Intent(this, HomeActivity::class.java)
-            startActivity(intent)
-            finish() // Close SplashActivity so it's not kept in the back stack
-            // Apply fade in/out animation transition
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+            navigateToHome()
         }, SPLASH_DELAY)
     }
+    
+    private fun navigateToHome() {
+        val intent = Intent(this, HomeActivity::class.java)
+        startActivity(intent)
+        finish() // Close SplashActivity so it's not kept in the back stack
+        
+        // Apply fade in/out animation transition
+        applyTransitionAnimation()
+    }
+    
+    private fun applyTransitionAnimation() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(
+                Activity.OVERRIDE_TRANSITION_OPEN, 
+                R.anim.fade_in, 
+                R.anim.fade_out
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        }
+    }
 }
+

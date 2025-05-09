@@ -56,7 +56,12 @@
         <activity
             android:name="com.app.burdii.ScorecardActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustPan|stateAlwaysHidden" />
+
+        <!-- FinalScoreActivity -->
+        <activity
+            android:name="com.app.burdii.FinalScoreActivity"
+            android:exported="false" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

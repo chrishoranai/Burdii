@@ -9,6 +9,7 @@
     <!-- Background colors -->
     <color name="backgroundMint">#E8F5E9</color>
     <color name="backgroundCard">#FFFFFF</color>
+    <color name="burdii_card_background_off_white">#FAFAFA</color>
     
     <!-- Text colors -->
     <color name="textPrimary">#212121</color>
@@ -19,6 +20,13 @@
     <color name="scorePositive">#4CAF50</color>
     <color name="scoreNegative">#F44336</color>
     <color name="scoreNeutral">#9E9E9E</color>
+    
+    <!-- Final score colors -->
+    <color name="light_red">#FFCDD2</color>
+    <color name="dark_red">#D32F2F</color>
+    <color name="light_blue">#BBDEFB</color>
+    <color name="dark_blue">#1976D2</color>
+    <color name="gold">#FFD700</color>
     
     <!-- Default colors -->
     <color name="black">#FF000000</color>

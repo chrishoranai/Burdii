@@ -101,7 +101,7 @@
             android:textSize="14sp" />
     </androidx.cardview.widget.CardView>
 
-    <!-- Scorecard Table -->
+    <!-- Scorecard Table with Nested Scrolling -->
     <androidx.cardview.widget.CardView
         android:id="@+id/scorecardCard"
         android:layout_width="0dp"
@@ -111,38 +111,132 @@
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
-        app:layout_constraintBottom_toTopOf="@+id/finishRoundButton"
+        app:layout_constraintBottom_toTopOf="@+id/buttonContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/voiceStatusCard">
 
-        <HorizontalScrollView
+        <!-- ScrollView for vertical scrolling -->
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true">
+            android:fillViewport="true"
+            android:scrollbars="vertical">
 
-            <TableLayout
-                android:id="@+id/scorecardTable"
-                android:layout_width="wrap_content"
+            <!-- HorizontalScrollView for horizontal scrolling -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:stretchColumns="*" />
+                android:fillViewport="true"
+                android:scrollbars="horizontal">
 
-        </HorizontalScrollView>
+                <TableLayout
+                    android:id="@+id/scorecardTable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:shrinkColumns="*"
+                    android:stretchColumns="*"
+                    android:background="@color/white"
+                    android:showDividers="middle"
+                    android:divider="?android:attr/dividerHorizontal" />
+
+            </HorizontalScrollView>
+        </ScrollView>
     </androidx.cardview.widget.CardView>
 
-    <!-- Finish Round Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/finishRoundButton"
+    <!-- Button Row - Previous Hole, Next Hole and Finish Round -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/buttonContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Finish Round"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
+        
+        <!-- Previous Hole Button (side by side on top) -->
+        <LinearLayout
+            android:id="@+id/prevButtonContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toStartOf="@+id/nextButtonContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageButton
+                android:id="@+id/previousHoleButton"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Previous Hole"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@android:drawable/ic_media_previous"
+                app:tint="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/previousHoleText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Hole"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="14sp" />
+        </LinearLayout>
+        
+        <!-- Next Hole Button (side by side on top) -->
+        <LinearLayout
+            android:id="@+id/nextButtonContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/prevButtonContainer"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageButton
+                android:id="@+id/nextHoleButton"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Next Hole"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@android:drawable/ic_media_next"
+                app:tint="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/nextHoleText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Hole"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Finish Round Button (wider button below) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/finishRoundButton"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="8dp"
+            android:text="Finish Round"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/previousHoleButton" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Mic Input Feedback (shown during active listening) -->
     <androidx.cardview.widget.CardView

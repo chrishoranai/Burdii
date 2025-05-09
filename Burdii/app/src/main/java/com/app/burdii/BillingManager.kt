@@ -329,6 +329,7 @@ class BillingManager(
         onFeatureUnlocked.invoke()
     }
     
+    @Suppress("UNUSED_PARAMETER")
     fun startPurchaseFlow(activity: Activity) {
         // Free phase implementation - features already enabled
         // Will be replaced with actual purchase flow in future

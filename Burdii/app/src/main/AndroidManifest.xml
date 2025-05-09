@@ -41,7 +41,12 @@
         <activity
             android:name=".ScorecardActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustPan|stateAlwaysHidden" />
+
+        <!-- FinalScoreActivity -->
+        <activity
+            android:name=".FinalScoreActivity"
+            android:exported="false" />
 
     </application>
 

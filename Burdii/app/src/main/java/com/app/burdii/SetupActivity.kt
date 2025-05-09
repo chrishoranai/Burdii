@@ -222,7 +222,7 @@ class SetupActivity : AppCompatActivity() {
                     setMargins(0, 0, 0, dpToPx(8))
                 }
                 // Use subtle off-white background per user preference
-                setCardBackgroundColor(resources.getColor(android.R.color.white))
+                setCardBackgroundColor(ContextCompat.getColor(this@SetupActivity, R.color.burdii_card_background_off_white))
             }
             
             val holeLayout = LinearLayout(this).apply {

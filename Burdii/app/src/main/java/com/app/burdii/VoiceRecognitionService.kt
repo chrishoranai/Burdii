@@ -13,581 +13,454 @@ import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import java.util.*
 import kotlin.random.Random
+import kotlin.text.RegexOption
 
-/**
- * A service that manages voice interaction for golf score input following a strict conversational flow.
- * Flow states:
- * 1. ACTIVATION_STATE - Listening for "Hey Birdie"
- * 2. SCORE_INQUIRY_STATE - Asking for scores on current hole
- * 3. SCORE_INPUT_PROCESSING - Processing spoken scores for multiple players
- * 4. CONFIRMATION_STATE - Confirming understanding of scores
- * 5. CONFIRMATION_HANDLING - Processing user's yes/no response
- */
 class VoiceRecognitionService(
     private val context: Context,
-    private val onScoresConfirmed: (Map<String, Int>, Int) -> Unit, // Callback with (playerScores, holeNumber)
-    private val onStateChanged: (VoiceState, String) -> Unit // Callback to update UI based on current state
+    private val onScoresConfirmed: (Map<String, Int>, Int) -> Unit,
+    private val onStateChanged: (VoiceState, String) -> Unit
 ) {
-    // Voice recognition states
     enum class VoiceState {
-        ACTIVATION_STATE,              // Listening for wake word
-        SCORE_INQUIRY_STATE,           // Asking for scores
-        SCORE_INPUT_PROCESSING,        // Processing score input
-        CONFIRMATION_STATE,            // Confirming scores
-        CONFIRMATION_HANDLING,         // Processing yes/no response
-        ERROR_STATE                    // Error occurred
+        ACTIVATION_STATE, SCORE_INQUIRY_STATE, SCORE_INPUT_PROCESSING,
+        CONFIRMATION_STATE, CONFIRMATION_HANDLING, ERROR_STATE
     }
 
     private var currentState = VoiceState.ACTIVATION_STATE
     private var currentHoleNumber = 1
-    private var tempScores: MutableMap<String, Int> = mutableMapOf()
+    private var tempScores = mutableMapOf<String, Int>()
+    private var retryAttempts = 0
+    private val MAX_RETRY_ATTEMPTS = 2
     
-    // Speech recognition components
     private lateinit var speechRecognizer: SpeechRecognizer
     private lateinit var textToSpeech: TextToSpeech
     private val handler = Handler(Looper.getMainLooper())
     
-    // Random affirmations for positive confirmation
-    private val affirmations = listOf(
-        "Got it!",
-        "Great!",
-        "Good work!",
-        "Scores recorded.",
-        "Perfect."
+    private val affirmations = listOf("Got it!", "Great!", "Good work!", "Scores recorded.", "Perfect.")
+    private var isTtsReady = false
+    private var isListening = false
+
+    // Wake word patterns for better detection
+    private val wakeWordPatterns = listOf(
+        "hey birdie",
+        "hay birdie", 
+        "hey burdy",
+        "hey bertie"
     )
     
-    // Flag to track TTS initialization
-    private var isTtsReady = false
+    // Enhanced regex patterns for score parsing
+    private val scorePatterns = listOf(
+        Regex("(\\w+)(?:\\s+(?:got|had|made|shot|scored|took))?\\s+(?:a|an)?\\s*(\\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten)", RegexOption.IGNORE_CASE),
+        Regex("(\\w+)\\s+(?:is|was)\\s+(?:a|an)?\\s*(\\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten)", RegexOption.IGNORE_CASE),
+        Regex("(\\w+)\\s+(\\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten)", RegexOption.IGNORE_CASE)
+    )
     
-    /**
-     * Initialize voice recognition components
-     */
+    private val wordNumberMap = mapOf(
+        "zero" to 0, "one" to 1, "two" to 2, "three" to 3, "four" to 4,
+        "five" to 5, "six" to 6, "seven" to 7, "eight" to 8, "nine" to 9, "ten" to 10
+    )
+
+    private val ttsListener = object : UtteranceProgressListener() {
+        override fun onStart(utteranceId: String?) {}
+        override fun onDone(utteranceId: String?) {
+            when {
+                utteranceId?.startsWith("SCORE_INQUIRY") == true -> scheduleAction(1200) { startListeningForScoreInput() }
+                utteranceId?.startsWith("CONFIRM_SCORES") == true -> scheduleAction(1000) { startListeningForConfirmation() }
+                utteranceId?.startsWith("AFFIRMATION") == true -> scheduleAction(500) { resetToActivationState() }
+                utteranceId?.startsWith("RETRY") == true -> scheduleAction(500) { startListeningForScoreInput() }
+            }
+        }
+        @Deprecated("Deprecated in Java")
+        override fun onError(utteranceId: String?) {
+            Log.e(TAG, "TTS error: $utteranceId")
+        }
+    }
+
     fun initialize() {
         initializeSpeechRecognizer()
         initializeTextToSpeech()
     }
-    
+
     private fun initializeSpeechRecognizer() {
         if (SpeechRecognizer.isRecognitionAvailable(context)) {
             speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
             speechRecognizer.setRecognitionListener(createRecognitionListener())
         } else {
-            Log.e(TAG, "Speech recognition is not available on this device")
-            currentState = VoiceState.ERROR_STATE
-            onStateChanged(currentState, "Speech recognition not available on this device")
+            handleError("Speech recognition not available")
         }
     }
-    
+
     private fun initializeTextToSpeech() {
         textToSpeech = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                val result = textToSpeech.setLanguage(Locale.US)
-                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.e(TAG, "Language not supported")
-                    currentState = VoiceState.ERROR_STATE
-                    onStateChanged(currentState, "Text-to-speech language not supported")
-                } else {
+                textToSpeech.apply {
+                    val langStatus = setLanguage(Locale.US)
+                    if (langStatus == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        handleError("TTS language not supported")
+                        return@apply
+                    }
+                    setSpeechRate(0.8f)
+                    setPitch(1.0f)
+                    setOnUtteranceProgressListener(ttsListener)
                     isTtsReady = true
-                    textToSpeech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                        override fun onStart(utteranceId: String?) {
-                            Log.d(TAG, "TTS started: $utteranceId")
-                        }
-                        
-                        override fun onDone(utteranceId: String?) {
-                            Log.d(TAG, "TTS done: $utteranceId")
-                            when {
-                                utteranceId?.startsWith("SCORE_INQUIRY") == true -> {
-                                    // After asking for scores, start listening for score input
-                                    handler.postDelayed({
-                                        startListeningForScoreInput()
-                                    }, 500)
-                                }
-                                utteranceId?.startsWith("CONFIRM_SCORES") == true -> {
-                                    // After asking for confirmation, start listening for yes/no
-                                    handler.postDelayed({
-                                        startListeningForConfirmation()
-                                    }, 500)
-                                }
-                                utteranceId?.startsWith("AFFIRMATION") == true -> {
-                                    // After confirmation affirmation, go back to activation state
-                                    handler.postDelayed({
-                                        resetToActivationState()
-                                    }, 500)
-                                }
-                                utteranceId?.startsWith("RETRY") == true -> {
-                                    // After asking to retry, listen for scores again
-                                    handler.postDelayed({
-                                        startListeningForScoreInput()
-                                    }, 500)
-                                }
-                            }
-                        }
-                        
-                        override fun onError(utteranceId: String?) {
-                            Log.e(TAG, "TTS error: $utteranceId")
-                        }
-                    })
                 }
             } else {
-                Log.e(TAG, "TTS initialization failed")
-                currentState = VoiceState.ERROR_STATE
-                onStateChanged(currentState, "Text-to-speech initialization failed")
+                handleError("TTS initialization failed")
             }
         }
     }
-    
-    /**
-     * Start listening for the wake word "Hey Birdie"
-     */
+
     fun startListeningForWakeWord() {
-        if (currentState != VoiceState.ACTIVATION_STATE) {
-            currentState = VoiceState.ACTIVATION_STATE
-        }
+        if (currentState != VoiceState.ACTIVATION_STATE) return
         
         onStateChanged(currentState, "Listening for 'Hey Birdie'")
-        
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
         }
         
-        try {
-            speechRecognizer.startListening(intent)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error starting speech recognition: ${e.message}")
-            currentState = VoiceState.ERROR_STATE
-            onStateChanged(currentState, "Error starting speech recognition")
-        }
+        safeStartListening(intent)
     }
     
-    /**
-     * Start the score inquiry process for the current hole
-     */
-    private fun startScoreInquiry() {
-        if (!isTtsReady) {
-            Log.e(TAG, "TTS not ready")
-            return
-        }
-        
-        currentState = VoiceState.SCORE_INQUIRY_STATE
-        onStateChanged(currentState, "Asking for scores on hole $currentHoleNumber")
-        
-        val message = "What were the scores on hole $currentHoleNumber?"
-        textToSpeech.speak(
-            message,
-            TextToSpeech.QUEUE_FLUSH,
-            null,
-            "SCORE_INQUIRY_$currentHoleNumber"
-        )
-    }
-    
-    /**
-     * Start listening for score input
-     */
-    private fun startListeningForScoreInput() {
-        Log.d(TAG, "startListeningForScoreInput called. Current state before change: $currentState") // Added log
-        currentState = VoiceState.SCORE_INPUT_PROCESSING
-        onStateChanged(currentState, "Listening for scores...")
-        
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
-        }
-        
-        try {
-            speechRecognizer.startListening(intent)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error starting speech recognition: ${e.message}")
-            currentState = VoiceState.ERROR_STATE
-            onStateChanged(currentState, "Error listening for scores")
-        }
-    }
-    
-    /**
-     * Parse player scores from the recognized text
-     * Example inputs:
-     * - "Jon got 3, Adam got 5, Nancy got 2"
-     * - "Jon 3, Adam 5, Nancy 2"
-     * - "Jon made a 3, Adam got a 5"
-     */
-    private fun parsePlayerScores(text: String): Map<String, Int> {
-        val scores = mutableMapOf<String, Int>()
-        
-        // Common patterns for score statements
-        val patterns = listOf(
-            "(\\w+)\\s+(?:got|had|made|shot|scored|took)\\s+(?:a|an)?\\s*(\\d+)",  // "Jon got a 3"
-            "(\\w+)\\s+(?:got|had|made|shot|scored|took)\\s*(\\d+)",               // "Jon got 3"
-            "(\\w+)\\s+(\\d+)"                                                    // "Jon 3"
-        )
-        
-        // Mapping of spoken number words to their numeric values for simple 0-10 range
-        val wordNumberMap = mapOf(
-            "zero" to 0,
-            "one" to 1,
-            "two" to 2,
-            "three" to 3,
-            "four" to 4,
-            "five" to 5,
-            "six" to 6,
-            "seven" to 7,
-            "eight" to 8,
-            "nine" to 9,
-            "ten" to 10
-        )
-        
-        for (pattern in patterns) {
-            val regex = pattern.toRegex(RegexOption.IGNORE_CASE)
-            val matches = regex.findAll(text)
-            
-            for (match in matches) {
-                if (match.groupValues.size >= 3) {
-                    val playerName = match.groupValues[1].trim().capitalize()
-                    val scoreStr = match.groupValues[2]
-                    val score = try {
-                        scoreStr.toInt()
-                    } catch (e: NumberFormatException) {
-                        // Attempt to map word number to integer (e.g., "four" -> 4)
-                        wordNumberMap[scoreStr.lowercase()]
-                    }
-                    
-                    if (score != null) {
-                        scores[playerName] = score
-                    } else {
-                        Log.e(TAG, "Could not parse score: $scoreStr")
-                    }
-                }
-            }
-        }
-        
-        // Fallback: if we still have no player scores but a standalone number was spoken
-        if (scores.isEmpty()) {
-            val standaloneNumberRegex = "(\\d+)".toRegex()
-            val numMatch = standaloneNumberRegex.find(text)
-            val numberWordMatch = wordNumberMap.keys.firstOrNull { text.contains(it, ignoreCase = true) }
-            
-            val detectedScore = when {
-                numMatch != null -> numMatch.groupValues[1].toIntOrNull()
-                numberWordMatch != null -> wordNumberMap[numberWordMatch.lowercase()]
-                else -> null
-            }
-            
-            if (detectedScore != null) {
-                // Use an empty key. Caller can map this to the only player if needed.
-                scores["__UNKNOWN__"] = detectedScore
-            }
-        }
-        
-        return scores
-    }
-    
-    /**
-     * Start the confirmation process for scores
-     */
-    private fun startConfirmationProcess(playerScores: Map<String, Int>) {
-        if (playerScores.isEmpty()) {
-            // If no scores were parsed, retry
-            speak("I didn't catch any scores. Please tell me the scores again for hole $currentHoleNumber.", "RETRY")
-            return
-        }
-        
-        // Save scores temporarily
-        tempScores = playerScores.toMutableMap()
-        
-        // Build confirmation message
-        val confirmationBuilder = StringBuilder("Okay, so that was ")
-        val scoreEntries = playerScores.entries.toList()
-        
-        scoreEntries.forEachIndexed { index, entry ->
-            if (index > 0) {
-                if (index == scoreEntries.size - 1) {
-                    confirmationBuilder.append(" and ")
-                } else {
-                    confirmationBuilder.append(", ")
-                }
-            }
-            confirmationBuilder.append("${entry.key} with a ${entry.value}")
-        }
-        confirmationBuilder.append(". Is that correct?")
-        
-        currentState = VoiceState.CONFIRMATION_STATE
-        onStateChanged(currentState, "Confirming scores")
-        
-        speak(confirmationBuilder.toString(), "CONFIRM_SCORES")
-    }
-    
-    /**
-     * Start listening for confirmation (yes/no)
-     */
-    private fun startListeningForConfirmation() {
-        currentState = VoiceState.CONFIRMATION_HANDLING
-        onStateChanged(currentState, "Listening for confirmation")
-        
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
-        }
-        
-        try {
-            speechRecognizer.startListening(intent)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error starting speech recognition: ${e.message}")
-            currentState = VoiceState.ERROR_STATE
-            onStateChanged(currentState, "Error listening for confirmation")
-        }
-    }
-    
-    /**
-     * Handle positive confirmation
-     */
-    private fun handlePositiveConfirmation() {
-        // Save confirmed scores
-        onScoresConfirmed(tempScores, currentHoleNumber)
-        
-        // Increment hole number for next interaction
-        currentHoleNumber++
-        
-        // Speak random affirmation
-        val affirmation = affirmations[Random.nextInt(affirmations.size)]
-        speak(affirmation, "AFFIRMATION")
-    }
-    
-    /**
-     * Handle negative confirmation
-     */
-    private fun handleNegativeConfirmation() {
-        // Clear temporary scores
-        tempScores.clear()
-        
-        // Ask for scores again for the same hole
-        speak("My apologies. Please tell me the scores again for hole $currentHoleNumber.", "RETRY")
-    }
-    
-    /**
-     * Reset to activation state (listening for wake word)
-     */
-    private fun resetToActivationState() {
-        tempScores.clear()
-        startListeningForWakeWord()
-    }
-    
-    /**
-     * Utility function to speak text with utterance ID
-     */
-    private fun speak(text: String, utteranceId: String) {
-        if (isTtsReady) {
-            textToSpeech.speak(
-                text,
-                TextToSpeech.QUEUE_FLUSH,
-                null,
-                utteranceId
-            )
-        } else {
-            Log.e(TAG, "TTS not ready")
-        }
-    }
-    
-    /**
-     * Create recognition listener for speech recognition
-     */
-    private fun createRecognitionListener(): RecognitionListener {
-        return object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {
-                Log.d(TAG, "Ready for speech")
-            }
-            
-            override fun onBeginningOfSpeech() {
-                Log.d(TAG, "Speech started")
-            }
-            
-            override fun onRmsChanged(rmsdB: Float) {
-                // Can be used for UI feedback on speech volume
-            }
-            
-            override fun onBufferReceived(buffer: ByteArray?) {
-                // Not needed for this implementation
-            }
-            
-            override fun onEndOfSpeech() {
-                Log.d(TAG, "Speech ended")
-            }
-            
-            override fun onError(error: Int) {
-                val errorMessage = when (error) {
-                    SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
-                    SpeechRecognizer.ERROR_CLIENT -> "Client side error"
-                    SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Insufficient permissions"
-                    SpeechRecognizer.ERROR_NETWORK -> "Network error"
-                    SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
-                    SpeechRecognizer.ERROR_NO_MATCH -> "No speech match"
-                    SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer busy"
-                    SpeechRecognizer.ERROR_SERVER -> "Server error"
-                    SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech input"
-                    else -> "Unknown error"
-                }
-                
-                Log.e(TAG, "Speech recognition error: $errorMessage ($error)")
-                
-                // Handle error based on current state
-                when (currentState) {
-                    VoiceState.ACTIVATION_STATE -> {
-                        // If we're in activation state, just restart listening for wake word
-                        handler.postDelayed({
-                            startListeningForWakeWord()
-                        }, 1000)
-                    }
-                    VoiceState.SCORE_INPUT_PROCESSING -> {
-                        // If error during score input, ask to try again
-                        speak("I'm sorry, I didn't catch that. Please tell me the scores again for hole $currentHoleNumber.", "RETRY")
-                    }
-                    VoiceState.CONFIRMATION_HANDLING -> {
-                        // If error during confirmation, ask again
-                        speak("I didn't hear your confirmation. Is that correct?", "CONFIRM_SCORES")
-                    }
-                    else -> {
-                        // For other states, reset to activation state
-                        handler.postDelayed({
-                            resetToActivationState()
-                        }, 1000)
-                    }
-                }
-            }
-            
-            override fun onResults(results: Bundle?) {
-                Log.d(TAG, "onResults called. Current state: $currentState") // Added log
-                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                if (matches.isNullOrEmpty()) {
-                    Log.e(TAG, "No speech recognition results")
-                    return
-                }
-                
-                val spokenText = matches[0].lowercase(Locale.getDefault())
-                Log.d(TAG, "Speech recognized: $spokenText")
-                
-                when (currentState) {
-                    VoiceState.ACTIVATION_STATE -> {
-                        Log.d(TAG, "onResults: ACTIVATION_STATE - spokenText: '$spokenText'") // Added log
-                        if (spokenText.contains("hey birdie")) {
-                            Log.d(TAG, "Wake word detected")
-                            startScoreInquiry()
-                        } else {
-                            // Not wake word, continue listening
-                            startListeningForWakeWord()
-                        }
-                    }
-                    VoiceState.SCORE_INPUT_PROCESSING -> {
-                        val playerScores = parsePlayerScores(spokenText)
-                        startConfirmationProcess(playerScores)
-                    }
-                    VoiceState.CONFIRMATION_HANDLING -> {
-                        // Check if response is affirmative
-                        if (isAffirmativeResponse(spokenText)) {
-                            handlePositiveConfirmation()
-                        } else if (isNegativeResponse(spokenText)) {
-                            handleNegativeConfirmation()
-                        } else {
-                            // Unclear response, ask again
-                            speak("I didn't understand. Please say yes or no.", "CONFIRM_SCORES")
-                        }
-                    }
-                    else -> {
-                        Log.w(TAG, "Received speech results in unexpected state: $currentState")
-                    }
-                }
-            }
-            
-            override fun onPartialResults(partialResults: Bundle?) {
-                // Only used for wake word detection in activation state
-                if (currentState == VoiceState.ACTIVATION_STATE) {
-                    val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                    if (!matches.isNullOrEmpty()) {
-                        val partialText = matches[0].lowercase(Locale.getDefault())
-                        if (partialText.contains("hey birdie")) {
-                            // Wake word detected in partial results
-                            Log.d(TAG, "Wake word detected in partial results")
-                            speechRecognizer.stopListening() // Stop and process full results
-                        }
-                    }
-                }
-            }
-            
-            override fun onEvent(eventType: Int, params: Bundle?) {
-                // Not used in this implementation
-            }
-        }
-    }
-    
-    /**
-     * Check if the response is affirmative (yes)
-     */
-    private fun isAffirmativeResponse(text: String): Boolean {
-        val affirmativePatterns = listOf(
-            "yes", "yeah", "yep", "yup", "correct", "right", "that's right", "that is right",
-            "sounds good", "good", "perfect", "exactly", "affirmative", "yes that's correct",
-            "yes that is correct"
-        )
-        
-        return affirmativePatterns.any { pattern -> 
-            text.contains(pattern) || text == pattern
-        }
-    }
-    
-    /**
-     * Check if the response is negative (no)
-     */
-    private fun isNegativeResponse(text: String): Boolean {
-        val negativePatterns = listOf(
-            "no", "nope", "nah", "incorrect", "wrong", "that's wrong", "that is wrong",
-            "not right", "negative", "no that's incorrect", "no that is incorrect",
-            "no that's wrong", "no that is wrong"
-        )
-        
-        return negativePatterns.any { pattern -> 
-            text.contains(pattern) || text == pattern
-        }
-    }
-    
-    /**
-     * Set current hole number (e.g., when resuming a saved round)
-     */
+    // Set the current hole number (called from ScorecardActivity when hole changes)
     fun setCurrentHoleNumber(holeNumber: Int) {
-        currentHoleNumber = holeNumber
-    }
-    
-    /**
-     * Get current hole number
-     */
-    fun getCurrentHoleNumber(): Int {
-        return currentHoleNumber
-    }
-    
-    /**
-     * Release resources
-     */
-    fun release() {
-        if (::speechRecognizer.isInitialized) {
-            speechRecognizer.stopListening()
-            speechRecognizer.cancel()
-            speechRecognizer.destroy()
+        if (holeNumber in 1..18) {  // Reasonable range check
+            currentHoleNumber = holeNumber
         }
+    }
+
+    fun stopListeningForWakeWord() {
+        if (::speechRecognizer.isInitialized && isListening) {
+            speechRecognizer.stopListening()
+            isListening = false
+        }
+    }
+
+    fun release() {
+        currentState = VoiceState.ERROR_STATE
+        handler.removeCallbacksAndMessages(null)
+        stopListeningForWakeWord()
         
-        if (::textToSpeech.isInitialized && isTtsReady) {
+        if (::textToSpeech.isInitialized) {
             textToSpeech.stop()
             textToSpeech.shutdown()
         }
+        if (::speechRecognizer.isInitialized) {
+            speechRecognizer.destroy()
+        }
+    }
+
+    // Improved safeStartListening with auto-retry
+    private fun safeStartListening(intent: Intent, maxRetries: Int = 2) {
+        if (!::speechRecognizer.isInitialized) {
+            try {
+                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
+                speechRecognizer.setRecognitionListener(createRecognitionListener())
+            } catch (e: Exception) {
+                handleError("Failed to initialize speech recognizer: ${e.message}")
+                return
+            }
+        }
         
-        handler.removeCallbacksAndMessages(null)
+        var retryCount = 0
+        fun attemptListen() {
+            try {
+                speechRecognizer.startListening(intent)
+                isListening = true
+            } catch (e: Exception) {
+                if (retryCount < maxRetries) {
+                    retryCount++
+                    Log.w(TAG, "Speech recognition failed, retrying (${retryCount}/${maxRetries}): ${e.message}")
+                    handler.postDelayed({ attemptListen() }, 1000)
+                } else {
+                    handleError("Error starting speech recognition after $maxRetries retries: ${e.message}")
+                }
+            }
+        }
+        
+        attemptListen()
     }
     
+    // Enhanced wake word detection with fuzzy matching
+    private fun containsWakeWord(text: String): Boolean {
+        val normalizedText = text.lowercase().trim()
+        return wakeWordPatterns.any { pattern -> 
+            normalizedText.contains(pattern) || 
+            calculateLevenshteinDistance(normalizedText, pattern) <= 2
+        }
+    }
+
+    // Calculate edit distance for fuzzy matching
+    private fun calculateLevenshteinDistance(s1: String, s2: String): Int {
+        val costs = IntArray(s2.length + 1)
+        for (i in 0..s2.length) costs[i] = i
+        
+        for (i in 1..s1.length) {
+            var lastValue = i
+            for (j in 1..s2.length) {
+                val oldValue = costs[j]
+                costs[j] = minOf(
+                    costs[j] + 1,
+                    costs[j - 1] + 1,
+                    lastValue + if (s1[i - 1] == s2[j - 1]) 0 else 1
+                )
+                lastValue = oldValue
+            }
+        }
+        return costs[s2.length]
+    }
+
+    private fun startScoreInquiry() {
+        if (!isTtsReady) return
+        currentState = VoiceState.SCORE_INQUIRY_STATE
+        onStateChanged(currentState, "Asking for scores on hole $currentHoleNumber")
+        speak("Please tell me the scores for hole $currentHoleNumber.", "SCORE_INQUIRY")
+    }
+
+    private fun startConfirmationProcess(playerScores: Map<String, Int>) {
+        if (playerScores.isEmpty()) {
+            retryAttempts++
+            if (retryAttempts < MAX_RETRY_ATTEMPTS) {
+                speak("I didn't catch any scores. Please try again.", "RETRY")
+            } else {
+                speak("Let's try again later. Say Hey Birdie when ready.", "RESET")
+                resetToActivationState()
+            }
+            return
+        }
+        retryAttempts = 0
+        tempScores = playerScores.toMutableMap()
+        val message = "For hole $currentHoleNumber, I heard " + playerScores.entries.joinToString(" and ") { "${it.key} scored ${it.value}" } + ". Is that correct?"
+        currentState = VoiceState.CONFIRMATION_STATE
+        onStateChanged(currentState, message)
+        speak(message, "CONFIRM_SCORES")
+    }
+
+    private fun handleConfirmationResponse(spokenText: String) {
+        when {
+            isAffirmativeResponse(spokenText) -> handlePositiveConfirmation()
+            isNegativeResponse(spokenText) -> handleNegativeConfirmation()
+            retryAttempts < MAX_RETRY_ATTEMPTS -> {
+                retryAttempts++
+                speak("Please say yes or no.", "RETRY")
+            }
+            else -> {
+                speak("Let's try again later. Say Hey Birdie when ready.", "RESET")
+                resetToActivationState()
+            }
+        }
+    }
+
+    private fun parsePlayerScores(text: String): Map<String, Int> {
+        val scores = mutableMapOf<String, Int>()
+        val normalizedText = text.lowercase().trim()
+        
+        // Try to extract scores using our patterns
+        scorePatterns.forEach { pattern ->
+            pattern.findAll(normalizedText).forEach { match ->
+                val playerName = match.groupValues[1].trim()
+                val scoreText = match.groupValues[2].trim()
+                
+                // Skip empty matches
+                if (playerName.isEmpty() || scoreText.isEmpty()) return@forEach
+                
+                // Process player name (handle special cases like "me", "I", etc.)
+                val finalPlayerName = when (playerName.lowercase()) {
+                    "me", "i", "myself" -> "Player One"
+                    else -> playerName.replaceFirstChar { it.uppercase() }
+                }
+                
+                // Process score (convert word numbers to digits)
+                val finalScore = scoreText.toIntOrNull() ?: wordNumberMap[scoreText.lowercase()] ?: return@forEach
+                
+                // Add to scores map
+                scores[finalPlayerName] = finalScore
+            }
+        }
+        
+        // If we didn't find any scores, try the fallback method
+        return scores.ifEmpty { parseFallbackScore(normalizedText) }
+    }
+
+    private fun parseFallbackScore(text: String): Map<String, Int> {
+        val numberPattern = "\\b(\\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten)\\b".toRegex(RegexOption.IGNORE_CASE)
+        val match = numberPattern.find(text)?.groupValues?.getOrNull(1)?.lowercase()
+        val number = match?.toIntOrNull() ?: wordNumberMap[match]
+        return if (number != null) mapOf("Player One" to number) else emptyMap()
+    }
+
+    private fun createRecognitionListener() = object : RecognitionListener {
+        override fun onReadyForSpeech(params: Bundle?) = Unit
+        override fun onBeginningOfSpeech() = Unit
+        override fun onRmsChanged(rmsdB: Float) = Unit
+        override fun onBufferReceived(buffer: ByteArray?) = Unit
+        override fun onEndOfSpeech() { isListening = false }
+
+        override fun onError(error: Int) {
+            when (error) {
+                SpeechRecognizer.ERROR_NO_MATCH -> {
+                    // No matching speech - common and not critical
+                    Log.w(TAG, "No speech detected (ERROR_NO_MATCH)")
+                    if (currentState == VoiceState.ACTIVATION_STATE) {
+                        handler.postDelayed(::startListeningForWakeWord, 1000)
+                    } else {
+                        handleSpeechError("I didn't catch that. Please try again.")
+                    }
+                }
+                SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> {
+                    // Speech timeout - common and not critical
+                    Log.w(TAG, "Speech timeout (ERROR_SPEECH_TIMEOUT)")
+                    if (currentState == VoiceState.ACTIVATION_STATE) {
+                        handler.postDelayed(::startListeningForWakeWord, 1000)
+                    } else {
+                        handleSpeechError("I didn't hear anything. Please try again.")
+                    }
+                }
+                SpeechRecognizer.ERROR_NETWORK, 
+                SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> {
+                    // Network-related errors
+                    Log.e(TAG, "Network error in speech recognition: $error")
+                    handleSpeechError("I'm having trouble with the network. Please try again.")
+                }
+                else -> {
+                    // Other errors
+                    Log.e(TAG, "Speech recognition error: ${getErrorText(error)} ($error)")
+                    handleError("Recognition error: ${getErrorText(error)}")
+                }
+            }
+        }
+
+        override fun onPartialResults(results: Bundle?) {
+            results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.let { partial ->
+                if (currentState == VoiceState.ACTIVATION_STATE && containsWakeWord(partial)) {
+                    Log.d(TAG, "Wake word detected in partial results: '$partial'")
+                    stopListeningForWakeWord()
+                    startScoreInquiry()
+                }
+            }
+        }
+
+        override fun onResults(results: Bundle?) {
+            results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.let { spokenText ->
+                Log.d(TAG, "Speech recognized in state $currentState: '$spokenText'")
+                when (currentState) {
+                    VoiceState.ACTIVATION_STATE -> if (containsWakeWord(spokenText)) startScoreInquiry()
+                    VoiceState.SCORE_INPUT_PROCESSING -> {
+                        val scores = parsePlayerScores(spokenText)
+                        Log.d(TAG, "Parsed scores: $scores from '$spokenText'")
+                        startConfirmationProcess(scores)
+                    }
+                    VoiceState.CONFIRMATION_HANDLING -> handleConfirmationResponse(spokenText)
+                    else -> Unit
+                }
+            }
+        }
+
+        override fun onEvent(eventType: Int, params: Bundle?) = Unit
+    }
+
+    private fun handleError(message: String) {
+        Log.e(TAG, message)
+        currentState = VoiceState.ERROR_STATE
+        onStateChanged(currentState, message)
+    }
+
+    private fun scheduleAction(delayMs: Long, action: () -> Unit) {
+        handler.postDelayed(action, delayMs)
+    }
+
+    private fun startListeningForScoreInput() {
+        currentState = VoiceState.SCORE_INPUT_PROCESSING
+        onStateChanged(currentState, "Listening for scores...")
+        safeStartListening(createScoreInputIntent())
+    }
+
+    private fun startListeningForConfirmation() {
+        currentState = VoiceState.CONFIRMATION_HANDLING
+        onStateChanged(currentState, "Listening for confirmation")
+        safeStartListening(createConfirmationIntent())
+    }
+
+    private fun resetToActivationState() {
+        tempScores.clear()
+        retryAttempts = 0
+        currentState = VoiceState.ACTIVATION_STATE
+        // Explicitly notify of state change to ensure UI updates
+        onStateChanged(currentState, "Listening for 'Hey Birdie'")
+        startListeningForWakeWord()
+    }
+
+    private fun speak(message: String, utterancePrefix: String) {
+        if (!isTtsReady) return
+        val utteranceId = utterancePrefix + "_" + System.currentTimeMillis().toString()
+        val params = Bundle().apply {
+            putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId)
+        }
+        textToSpeech.speak(message, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
+    }
+
+    private fun isAffirmativeResponse(text: String) = listOf("yes", "yeah", "yep", "correct", "right").any { text.contains(it, ignoreCase = true) }
+
+    private fun isNegativeResponse(text: String) = listOf("no", "nope", "nah", "incorrect", "wrong").any { text.contains(it, ignoreCase = true) }
+
+    private fun handlePositiveConfirmation() {
+        onScoresConfirmed(tempScores, currentHoleNumber)
+        currentHoleNumber++
+        // Let the caller know we're going back to activation state
+        onStateChanged(VoiceState.ACTIVATION_STATE, "Listening for 'Hey Birdie'")
+        speak(affirmations[Random.nextInt(affirmations.size)], "AFFIRMATION")
+    }
+
+    private fun handleNegativeConfirmation() {
+        tempScores.clear()
+        retryAttempts++
+        if (retryAttempts < MAX_RETRY_ATTEMPTS) {
+            speak("Sorry, let's try again. Please tell me the scores.", "RETRY")
+        } else {
+            // Update state before speaking to ensure UI reflects the change
+            onStateChanged(VoiceState.ACTIVATION_STATE, "Listening for 'Hey Birdie'")
+            speak("Let's try again later. Say Hey Birdie when ready.", "RESET")
+            resetToActivationState()
+        }
+    }
+
+    private fun createScoreInputIntent(): Intent {
+        return Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        }
+    }
+
+    private fun createConfirmationIntent(): Intent {
+        return Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        }
+    }
+
+    // Handle speech errors with appropriate retry mechanism
+    private fun handleSpeechError(message: String) {
+        if (retryAttempts < MAX_RETRY_ATTEMPTS) {
+            retryAttempts++
+            speak(message, "RETRY")
+        } else {
+            speak("Let's try again later. Say Hey Birdie when ready.", "RESET")
+            resetToActivationState()
+        }
+    }
+
     companion object {
         private const val TAG = "VoiceRecognitionService"
+        private fun getErrorText(errorCode: Int): String = when (errorCode) {
+            SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
+            SpeechRecognizer.ERROR_CLIENT -> "Client side error"
+            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Insufficient permissions"
+            SpeechRecognizer.ERROR_NETWORK -> "Network error"
+            SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
+            SpeechRecognizer.ERROR_NO_MATCH -> "No recognition match"
+            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognition service busy"
+            SpeechRecognizer.ERROR_SERVER -> "Server error"
+            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Speech timeout"
+            else -> "Unknown error"
+        }
     }
-}
-
-// String extension function to capitalize first letter
-private fun String.capitalize(): String {
-    return if (isNotEmpty()) this[0].uppercaseChar() + substring(1).lowercase() else this
 }

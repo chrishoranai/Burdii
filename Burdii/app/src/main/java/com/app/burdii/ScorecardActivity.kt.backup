@@ -1,0 +1,650 @@
+package com.app.burdii
+
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.graphics.Typeface
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.speech.tts.TextToSpeech
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
+import com.google.android.material.button.MaterialButton
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.text.SimpleDateFormat
+import java.util.*
+
+class ScorecardActivity : AppCompatActivity() {
+    private lateinit var currentHoleTextView: TextView
+    private lateinit var scorecardTable: TableLayout
+    private lateinit var micFeedbackCard: CardView
+    private lateinit var voiceStatusCard: CardView
+    private lateinit var voiceStatusTextView: TextView
+    private lateinit var voiceToggleSwitch: Switch
+    private lateinit var finishRoundButton: MaterialButton
+    private lateinit var nextHoleButton: MaterialButton
+    private lateinit var textToSpeech: TextToSpeech
+    private lateinit var speechRecognizer: SpeechRecognizer
+    private val handler = Handler(Looper.getMainLooper())
+    private var currentHole = 1
+    private var currentPlayerIndex = 0
+    private lateinit var playerNames: Array<String>
+    private var numHoles: Int = 0
+    private var numPlayers: Int = 0
+    private lateinit var parValues: IntArray
+    private lateinit var scores: Array<IntArray>
+    private lateinit var scoreEditTexts: Array<Array<EditText>>
+    private lateinit var totalTextViews: Array<TextView>
+    private var isListeningForWakeWord = true
+    private var isAskingForScore = false
+    private lateinit var scoringMethod: String
+    private val TAG = "ScorecardActivity"
+
+    // New voice recognition service
+    private lateinit var voiceRecognitionService: VoiceRecognitionService
+
+    // --- SharedPreferences Constants and Gson --- 
+    private val PREFS_FILENAME = "com.app.burdii.prefs"
+    private val ROUNDS_KEY = "rounds_history"
+    private val gson = Gson()
+    // ------------------------------------------
+
+    private val REQUEST_RECORD_AUDIO_PERMISSION = 200
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_scorecard)
+        Log.d(TAG, "onCreate started")
+
+        // Initialize UI components
+        scorecardTable = findViewById(R.id.scorecardTable)
+        currentHoleTextView = findViewById(R.id.currentHoleTextView)
+        micFeedbackCard = findViewById(R.id.micFeedbackCard)
+        voiceStatusCard = findViewById(R.id.voiceStatusCard)
+        voiceStatusTextView = findViewById(R.id.voiceStatusTextView)
+        voiceToggleSwitch = findViewById(R.id.voiceToggleSwitch)
+        finishRoundButton = findViewById(R.id.finishRoundButton)
+        nextHoleButton = findViewById(R.id.nextHoleButton)
+        micFeedbackCard.visibility = View.GONE
+        
+        // Initially hide voice status until voice is enabled
+        voiceStatusCard.visibility = View.GONE
+
+        // Retrieve data from intent
+        numHoles = intent.getIntExtra("NUM_HOLES", 18) // Default to 18 if not found
+        val roundName = intent.getStringExtra("ROUND_NAME") ?: "New Round" // Default if not found
+        playerNames = intent.getStringArrayExtra("PLAYER_NAMES") ?: arrayOf("Player 1") // Default if not found
+        numPlayers = playerNames.size // Get numPlayers from the array size
+        parValues = intent.getIntArrayExtra("PAR_VALUES") ?: IntArray(numHoles) { 3 } // Default par 3 if not found
+        scoringMethod = intent.getStringExtra("SCORING_METHOD") ?: "MANUAL" // Default to MANUAL
+        Log.d(TAG, "onCreate: intent extra 'SCORING_METHOD': $scoringMethod")
+        Log.d(TAG, "onCreate: Effective scoringMethod after default: $scoringMethod")
+
+        // Set round name as title
+        title = roundName
+        // Set round name if the TextView exists
+        findViewById<TextView>(R.id.roundNameTextView)?.text = roundName
+
+        // All features are available in testing phase
+        // Initialize UI based on selected scoring method
+        voiceToggleSwitch.isChecked = scoringMethod == "VOICE"
+        Log.d(TAG, "onCreate: voiceToggleSwitch.isChecked set to: ${voiceToggleSwitch.isChecked} based on scoringMethod: $scoringMethod")
+
+        // Set up toggle listener
+        voiceToggleSwitch.setOnCheckedChangeListener { _, isChecked ->
+            Log.d(TAG, "voiceToggleSwitch.setOnCheckedChangeListener: isChecked: $isChecked")
+            if (isChecked) {
+                // Enable voice input
+                voiceStatusCard.visibility = View.VISIBLE
+                voiceStatusTextView.text = "Listening for 'Hey Birdie'"
+                startVoiceRecognitionService()
+            } else {
+                // Disable voice input, enable manual input
+                voiceStatusCard.visibility = View.GONE
+                if (::voiceRecognitionService.isInitialized) {
+                    // Stop the voice recognition service if it's running
+                    try {
+                        // For now just initialize a new instance which should stop any ongoing recognition
+                        voiceRecognitionService = VoiceRecognitionService(
+                            context = this,
+                            onScoresConfirmed = { _, _ -> },
+                            onStateChanged = { _, _ -> }
+                        )
+                    } catch (e: Exception) {
+                        // Ignore any errors while stopping
+                    }
+                }
+                enableManualInput()
+            }
+        }
+
+        // Initialize scores and UI arrays
+        scores = Array(numPlayers) { IntArray(numHoles) }
+        scoreEditTexts = Array(numPlayers) { Array(numHoles) { EditText(this) } }
+        totalTextViews = Array(numPlayers) { TextView(this) }
+
+        // Setup the scorecard table
+        setupScorecardTable()
+
+        // Initialize TextToSpeech (maintaining for backward compatibility)
+        textToSpeech = TextToSpeech(this) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                val result = textToSpeech.setLanguage(Locale.US)
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Log.e("TTS", "Language not supported")
+                }
+            } else {
+                Log.e("TTS", "Initialization failed")
+            }
+        }
+
+        // Initialize SpeechRecognizer (maintaining for backward compatibility)
+        if (SpeechRecognizer.isRecognitionAvailable(this)) {
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+            setupSpeechRecognizerListener()
+        }
+        
+        // Initialize the new VoiceRecognitionService
+        Log.d(TAG, "onCreate: Evaluating scoringMethod before if/else. Current value: $scoringMethod, voiceToggleSwitch.isChecked: ${voiceToggleSwitch.isChecked}")
+        if (scoringMethod == "VOICE") {
+            Log.d(TAG, "onCreate: scoringMethod IS 'VOICE'. Initializing voice services.")
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                startVoiceRecognitionService()
+            }
+        } else {
+            Log.d(TAG, "onCreate: scoringMethod IS NOT 'VOICE' (it's '$scoringMethod'). Setting up for manual input.")
+            micFeedbackCard.visibility = View.GONE
+            Log.d(TAG, "onCreate (manual mode): micFeedbackCard visibility explicitly set to GONE. Actual visibility: ${micFeedbackCard.visibility}")
+            voiceStatusCard.visibility = View.GONE
+            Log.d(TAG, "onCreate (manual mode): voiceStatusCard visibility explicitly set to GONE. Actual visibility: ${voiceStatusCard.visibility}")
+            enableManualInput()
+        }
+
+        // Request permissions
+        Log.d(TAG, "onCreate: Calling checkAndRequestPermissions(). Current voiceToggleSwitch.isChecked: ${voiceToggleSwitch.isChecked}")
+        checkAndRequestPermissions()
+
+        // Setup finish round button listener
+        finishRoundButton.setOnClickListener {
+            finishRound()
+        }
+        
+        // Setup next hole button listener
+        nextHoleButton.setOnClickListener {
+            advanceToNextHole()
+        }
+        
+        // Setup next hole button listener
+        nextHoleButton.setOnClickListener {
+            advanceToNextHole()
+        }
+    }
+
+    private fun checkAndRequestPermissions() {
+        Log.d(TAG, "checkAndRequestPermissions called. Current voiceToggleSwitch.isChecked: ${voiceToggleSwitch.isChecked}, scoringMethod: $scoringMethod")
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "checkAndRequestPermissions: Permissions already granted.")
+            if (voiceToggleSwitch.isChecked) {
+                Log.d(TAG, "checkAndRequestPermissions: Permissions granted and voiceToggleSwitch IS CHECKED. Attempting to startVoiceRecognitionService.")
+                startVoiceRecognitionService()
+            } else {
+                Log.d(TAG, "checkAndRequestPermissions: Permissions granted BUT voiceToggleSwitch IS NOT CHECKED. Not starting voice service.")
+            }
+        } else {
+            Log.d(TAG, "checkAndRequestPermissions: Permissions not granted. Requesting permissions.")
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_RECORD_AUDIO_PERMISSION)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        Log.d(TAG, "onRequestPermissionsResult called. RequestCode: $requestCode")
+        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "onRequestPermissionsResult: Record audio permission GRANTED. Current voiceToggleSwitch.isChecked: ${voiceToggleSwitch.isChecked}, scoringMethod: $scoringMethod")
+                // Start voice recognition if the toggle is on (or scoring method implies it should be)
+                if (voiceToggleSwitch.isChecked) { // Check the toggle's current state
+                    Log.d(TAG, "onRequestPermissionsResult: Permission granted and voiceToggleSwitch IS CHECKED. Starting voice service.")
+                    startVoiceRecognitionService()
+                } else {
+                    Log.d(TAG, "onRequestPermissionsResult: Permission granted BUT voiceToggleSwitch IS NOT CHECKED. Not starting voice service.")
+                }
+            } else {
+                Log.d(TAG, "onRequestPermissionsResult: Record audio permission DENIED.")
+                Toast.makeText(this, "Record audio permission is required for voice input.", Toast.LENGTH_LONG).show()
+                // Ensure UI reflects that voice mode cannot be enabled
+                voiceToggleSwitch.isChecked = false // Turn off the toggle if permission is denied
+                micFeedbackCard.visibility = View.GONE
+                voiceStatusCard.visibility = View.GONE
+                enableManualInput()
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "onStart called")
+        
+        // We'll use onStart primarily to handle returning from minimized state
+        // This keeps the voice recognition active even when app was in background
+        if (isTemporarilyPaused && voiceToggleSwitch.isChecked) {
+            Log.d(TAG, "onStart: Returning from temporarily paused state with voice mode ON")
+            // No need to restart services that were kept running in background
+        }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume called. voiceToggleSwitch.isChecked: ${voiceToggleSwitch.isChecked}, scoringMethod: $scoringMethod")
+        
+        // Restart listening only if the toggle is actually ON
+        if (voiceToggleSwitch.isChecked) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "onResume: Permissions granted and toggle is ON.")
+                if (scoringMethod == "VOICE" && ::voiceRecognitionService.isInitialized) {
+                    // Only restart if we're not coming back from minimized state
+                    if (!isTemporarilyPaused) {
+                        Log.d(TAG, "onResume: Resuming new VoiceRecognitionService.")
+                        voiceRecognitionService.startListeningForWakeWord()
+                    } else {
+                        Log.d(TAG, "onResume: Coming back from minimized with voice active - continuing")
+                    }
+                } else if (scoringMethod == "VOICE") { 
+                    Log.d(TAG, "onResume: scoringMethod is VOICE but new service not initialized. Starting new service.")
+                    startVoiceRecognitionService() // Initialize if needed
+                } else {
+                    Log.d(TAG, "onResume: Toggle is ON, but scoringMethod is NOT 'VOICE'. Attempting to start new service.")
+                    startVoiceRecognitionService()
+                }
+            } else {
+                Log.d(TAG, "onResume: Permissions NOT granted. Cannot start voice service.")
+                // Optionally, re-request permissions or inform user
+            }
+        } else {
+            Log.d(TAG, "onResume: voiceToggleSwitch is OFF. Not starting any voice service.")
+            // Ensure UI reflects that voice is off
+            micFeedbackCard.visibility = View.GONE
+            voiceStatusCard.visibility = View.GONE
+        }
+        
+        // Reset temporary pause flag - we're fully resumed now
+        isTemporarilyPaused = false
+    }
+    
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "onStop called. isFinishing=${isFinishing}, isChangingConfigurations=${isChangingConfigurations}")
+        
+        // If the app is actually finishing, the voice services will already have been stopped in onPause
+        // Otherwise, voice recognition should continue running in the background
+        if (!isFinishing && voiceToggleSwitch.isChecked) {
+            Log.d(TAG, "onStop: App going to background with voice mode ON - maintaining voice recognition")
+            // VoiceRecognitionService will continue running - no action needed
+        }
+    }
+
+    // Track if app is finishing to distinguish between minimized and actual close
+    private var isTemporarilyPaused = false
+    
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "onPause called. voiceToggleSwitch.isChecked: ${voiceToggleSwitch.isChecked}")
+        
+        // Track if this is just a temporary pause (minimized or screen locked) vs app being closed
+        isTemporarilyPaused = !isFinishing
+        
+        if (isFinishing) {
+            // App is actually closing - stop everything
+            Log.d(TAG, "onPause: App is finishing - stopping all voice services")
+            
+            // Stop legacy speech recognizer
+            if (::speechRecognizer.isInitialized) {
+                speechRecognizer.stopListening()
+            }
+            
+            // Stop voice recognition service
+            if (::voiceRecognitionService.isInitialized && voiceToggleSwitch.isChecked) {
+                voiceRecognitionService.stopListeningForWakeWord()
+            }
+            
+            // Stop TTS
+            if (::textToSpeech.isInitialized) {
+                textToSpeech.stop()
+            }
+        } else {
+            // App is just minimized or screen is locked - keep listening if voice mode is on
+            Log.d(TAG, "onPause: App is temporarily paused - continuing voice services")
+            
+            // Only legacy speech recognition needs to pause since it can't run well in background
+            if (::speechRecognizer.isInitialized && !isListeningForWakeWord) {
+                Log.d(TAG, "onPause: Pausing only legacy SpeechRecognizer")
+                speechRecognizer.stopListening()
+            }
+            
+            // VoiceRecognitionService remains active - doesn't need modification here
+        }
+    }
+    
+    override fun onDestroy() {
+        Log.d(TAG, "onDestroy called")
+        // Properly release all voice-related resources
+        if (::speechRecognizer.isInitialized) {
+            speechRecognizer.destroy()
+        }
+        
+        if (::textToSpeech.isInitialized) {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
+        
+        if (::voiceRecognitionService.isInitialized) {
+            voiceRecognitionService.release()
+        }
+        
+        super.onDestroy()
+    }
+
+    private fun startVoiceRecognitionService() {
+        Log.d(TAG, "startVoiceRecognitionService() called")
+        
+        // Initialize voice recognition service with callbacks
+        voiceRecognitionService = VoiceRecognitionService(
+            context = this,
+            onScoresConfirmed = { playerScores, holeNum ->
+                // Handle score confirmation from voice
+                Log.d(TAG, "Voice scores confirmed for hole $holeNum: $playerScores")
+                
+                // Match player names with scores
+                playerScores.forEach { (playerName, score) ->
+                    // Find the player index from the name
+                    val playerIndex = playerNames.indexOfFirst { it.equals(playerName, ignoreCase = true) }
+                    
+                    // Update the UI and data model with the confirmed score if player found
+                    if (playerIndex >= 0 && playerIndex < numPlayers && currentHole > 0 && currentHole <= numHoles) {
+                        val holeIndex = currentHole - 1 // Convert 1-indexed hole to 0-indexed array
+                        scores[playerIndex][holeIndex] = score
+                        
+                        // Update EditText to reflect voice input
+                        scoreEditTexts[playerIndex][holeIndex].setText(score.toString())
+                        
+                        // Update total score
+                        updateTotalScore(playerIndex)
+                    }
+                }
+                
+                // Function to advance to the next hole
+                advanceToNextHole()
+            }
+        )
+    }
+    
+    private fun advanceToNextHole() {
+        // Save current scores
+        saveCurrentScores()
+        
+        // Make sure we haven't reached the last hole
+        if (currentHole < numHoles) {
+            currentHole++
+            updateHoleDisplay()
+            
+            // If voice recognition is active, update the hole number
+            if (voiceToggleSwitch.isChecked && ::voiceRecognitionService.isInitialized) {
+                voiceRecognitionService.setCurrentHoleNumber(currentHole)
+                // Make sure we're in activation state
+                voiceStatusTextView.text = "Listening for 'Hey Birdie'"
+                micFeedbackCard.visibility = View.GONE
+            }
+            
+            // Provide user feedback
+            Toast.makeText(this, "Advanced to Hole $currentHole", Toast.LENGTH_SHORT).show()
+        } else {
+            // We're already at the last hole
+            Toast.makeText(this, "This is the last hole", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    // Update the UI to show the current hole
+    private fun updateHoleDisplay() {
+        currentHoleTextView.text = "Current Hole: $currentHole"
+            }
+            
+            Toast.makeText(this, "Advanced to Hole $currentHole", Toast.LENGTH_SHORT).show()
+        } else {
+            // We're already at the last hole
+            Toast.makeText(this, "This is the last hole", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    // Function to update the current hole indicator
+    private fun updateHoleDisplay() {
+        currentHoleTextView.text = "Current Hole: $currentHole"
+    }
+    
+    // Function to update the UI from voice recognition scores
+    private fun updateScoresFromVoice(playerScores: Map<String, Int>) {
+        // Process each player score
+        for ((playerName, score) in playerScores) {
+            // Find the player index from the name
+            val playerIndex = playerNames.indexOfFirst { it.equals(playerName, ignoreCase = true) }
+            
+            // Update the UI and data model with the confirmed score if player found
+            if (playerIndex >= 0 && playerIndex < numPlayers && currentHole > 0 && currentHole <= numHoles) {
+                val holeIndex = currentHole - 1 // Convert 1-indexed hole to 0-indexed array
+                scores[playerIndex][holeIndex] = score
+                
+                // Update EditText to reflect voice input
+                scoreEditTexts[playerIndex][holeIndex].setText(score.toString())
+                
+                // Update total score
+                updateTotalScore(playerIndex)
+            }
+        }
+    }
+    
+    if (::textToSpeech.isInitialized) {
+        textToSpeech.stop()
+        textToSpeech.shutdown()
+    }
+    
+    if (::voiceRecognitionService.isInitialized) {
+        voiceRecognitionService.release()
+    }
+    
+    super.onDestroy()
+}
+
+private fun setupScorecardTable() {
+    Log.d(TAG, "setupScorecardTable: Setting up scorecard table")
+    // Clear any existing views first
+    scorecardTable.removeAllViews()
+    
+    // ===== Create header row =====
+    val headerRow = TableRow(this)
+    headerRow.layoutParams = TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT)
+    
+    // Empty corner cell
+    val cornerCell = TextView(this)
+    cornerCell.text = "Hole"
+    cornerCell.setTypeface(null, Typeface.BOLD)
+    cornerCell.setPadding(16, 16, 16, 16)
+    cornerCell.gravity = Gravity.CENTER
+    headerRow.addView(cornerCell)
+    
+    // Hole number cells
+    for (hole in 1..numHoles) {
+        val holeHeaderCell = TextView(this)
+        holeHeaderCell.text = hole.toString()
+        holeHeaderCell.setTypeface(null, Typeface.BOLD)
+        holeHeaderCell.setPadding(16, 16, 16, 16)
+        holeHeaderCell.gravity = Gravity.CENTER
+        headerRow.addView(holeHeaderCell)
+    }
+    
+    // Total column
+    val totalHeaderCell = TextView(this)
+    totalHeaderCell.text = "Total"
+    totalHeaderCell.setTypeface(null, Typeface.BOLD)
+    totalHeaderCell.setPadding(16, 16, 16, 16)
+    totalHeaderCell.gravity = Gravity.CENTER
+    headerRow.addView(totalHeaderCell)
+    
+    // Add the header row to the table
+    scorecardTable.addView(headerRow)
+    
+    // ===== Create player rows =====
+    for (i in playerNames.indices) {
+        val playerRow = TableRow(this)
+        playerRow.layoutParams = TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT)
+        
+        // Player name cell
+        val playerNameCell = TextView(this)
+        playerNameCell.text = playerNames[i]
+        playerNameCell.setTypeface(null, Typeface.BOLD)
+        playerNameCell.setPadding(16, 16, 16, 16)
+        playerNameCell.gravity = Gravity.START
+        playerRow.addView(playerNameCell)
+        
+        // Score input cells for each hole
+        for (j in 0 until numHoles) {
+            val scoreCell = EditText(this)
+            scoreCell.layoutParams = TableRow.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            scoreCell.minWidth = 100 // Set minimum width for better touch targets
+            scoreCell.setPadding(16, 0, 16, 0)
+            scoreCell.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            scoreCell.gravity = Gravity.CENTER
+            scoreCell.setHint("0")
+            
+            // Create references to edit text for later score tracking
+            scoreEditTexts[i][j] = scoreCell
+            
+            // Add text change listener to update scores array when user edits
+            val holeIndex = j // Capture for use in listener
+            val playerIndex = i
+            scoreCell.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    try {
+                        val score = s.toString().toIntOrNull() ?: 0
+                        scores[playerIndex][holeIndex] = score
+                        updateTotalScore(playerIndex)
+                    } catch (e: Exception) {
+                        // Handle parse errors
+                        Log.e(TAG, "Error parsing score: ${e.message}")
+                    }
+                }
+                
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            })
+            
+            playerRow.addView(scoreCell)
+        }
+        
+        // Total score cell (updated as user enters scores)
+        val totalCell = TextView(this)
+        totalCell.layoutParams = TableRow.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+            total += score
+        }
+        totalTextViews[playerIndex].text = total.toString()
+    }
+
+    private fun setupSpeechRecognizerListener() {
+        Log.d(TAG, "setupSpeechRecognizerListener() called (STUB)")
+        // Placeholder for setting up the speech recognizer listener
+        // This might be related to the legacy speechRecognizer
+    }
+
+    private fun finishRound() {
+        Log.d(TAG, "finishRound() called")
+        
+        // Save completed round to SharedPreferences
+        val roundName = intent.getStringExtra("ROUND_NAME") ?: "Round ${Date().time}"
+        val dateFormat = SimpleDateFormat("MMM dd, yy", Locale.getDefault())
+        val roundDate = dateFormat.format(Date())
+        
+        // Calculate total scores for each player
+        val totalScores = Array(numPlayers) { playerIndex -> 
+            scores[playerIndex].sum()
+        }
+        
+        // Create a string representation of scores for storage
+        val scoreChangeText = if (playerNames.size == 1) {
+            // For single player, just show the score
+            "${totalScores[0]}"
+        } else {
+            // For multiplayer, show relative to winner
+            val minScore = totalScores.minOrNull() ?: 0
+            playerNames.zip(totalScores).joinToString(", ") { (name, score) ->
+                if (score == minScore) "$name: $score" else "$name: +${score - minScore}"
+            }
+        }
+        
+        // Create new round object with completed flag
+        val round = Round(
+            name = roundName,
+            date = roundDate,
+            scoreChange = scoreChangeText,
+            holesPlayed = "$numHoles holes",
+            isComplete = true
+        )
+        
+        // Save to SharedPreferences
+        val rounds = loadRounds().toMutableList()
+        rounds.add(0, round) // Add to beginning of list (most recent)
+        saveRounds(rounds)
+        
+        // Transition to FinalScoreActivity
+        val intent = Intent(this, FinalScoreActivity::class.java)
+        intent.putExtra("PLAYER_NAMES", playerNames)
+        intent.putExtra("TOTAL_SCORES", totalScores)
+        intent.putExtra("PAR", parValues[0]) // Using first hole's par as the default par
+        intent.putExtra("ROUND_NAME", roundName)
+        startActivity(intent)
+        finish() // Close the scorecard activity
+    }
+    
+    private fun loadRounds(): List<Round> {
+        val prefs: SharedPreferences = getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
+        val json = prefs.getString(ROUNDS_KEY, null)
+        return if (json != null) {
+            val type = object : TypeToken<List<Round>>() {}.type
+            try {
+                gson.fromJson(json, type)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                listOf()
+            }
+        } else {
+            listOf()
+        }
+    }
+    
+    private fun saveRounds(rounds: List<Round>) {
+        val prefs: SharedPreferences = getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        val json = gson.toJson(rounds)
+        editor.putString(ROUNDS_KEY, json)
+        editor.apply()
+    }
+
+}
