@@ -8,12 +8,14 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
+import androidx.navigation.findNavController
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -21,9 +23,10 @@ import com.google.gson.reflect.TypeToken
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var recentRoundsRecyclerView: RecyclerView
-    private lateinit var startNewRoundButton: MaterialButton
+    private lateinit var roundScorecardButton: MaterialButton
+    private lateinit var leagueScorecardButton: MaterialButton
+    private lateinit var seasonLeagueTrackerButton: MaterialButton
     private lateinit var clearButton: Button
-    private lateinit var upgradeButton: Button
     private lateinit var adapter: RoundAdapter
     private var roundsList = mutableListOf<Round>()
     
@@ -47,10 +50,10 @@ class HomeActivity : AppCompatActivity() {
         }
 
         // Initialize views
+        // Removed startNewRoundButton and upgradeButton references
         recentRoundsRecyclerView = findViewById(R.id.recentRoundsRecyclerView)
-        startNewRoundButton = findViewById(R.id.startNewRoundButton)
+
         clearButton = findViewById(R.id.clearButton)
-        upgradeButton = findViewById(R.id.upgradeButton)
         
         // Load rounds from SharedPreferences instead of sample data
         roundsList = loadRounds().toMutableList()
@@ -60,20 +63,19 @@ class HomeActivity : AppCompatActivity() {
         recentRoundsRecyclerView.adapter = adapter
         recentRoundsRecyclerView.layoutManager = LinearLayoutManager(this)
 
+        // Get references to the new buttons
+        roundScorecardButton = findViewById(R.id.roundScorecardButton)
+        leagueScorecardButton = findViewById(R.id.leagueScorecardButton)
+        seasonLeagueTrackerButton = findViewById(R.id.seasonLeagueTrackerButton)
+
         // Button click listeners
-        startNewRoundButton.setOnClickListener {
-            // Navigate to setup activity
-            val intent = Intent(this, SetupActivity::class.java)
-            startActivity(intent)
+        roundScorecardButton.setOnClickListener {
+            findNavController(R.id.nav_host_fragment).navigate(R.id.scorecardActivity)
         }
 
         clearButton.setOnClickListener {
             // Show confirmation dialog before clearing
             showConfirmationDialog()
-        }
-        
-        upgradeButton.setOnClickListener {
-            Toast.makeText(this, "All Burdii Pro features are currently available for free!", Toast.LENGTH_LONG).show()
         }
     }
 

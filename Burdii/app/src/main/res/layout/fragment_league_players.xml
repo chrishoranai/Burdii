@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".LeaguePlayersFragment">
+
+    <TextView
+        android:id="@+id/playersTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Players"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/newPlayerNameEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:hint="Enter player or team name"
+        android:inputType="textCapWords"
+        app:layout_constraintEnd_toStartOf="@+id/addPlayerButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/playersTitle" />
+
+    <Button
+        android:id="@+id/addPlayerButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add"
+        app:layout_constraintBottom_toBottomOf="@+id/newPlayerNameEditText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/newPlayerNameEditText" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/playersRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/proceedToScoreEntryButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/newPlayerNameEditText"
+        tools:listitem="@layout/item_player" />
+
+    <Button
+        android:id="@+id/proceedToScoreEntryButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Proceed to Score Entry"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="Next"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeActivity">
+
+    <activity
+        android:id="@+id/homeActivity"
+        android:name="com.app.burdii.HomeActivity"
+        android:label="HomeActivity"
+        tools:layout="@layout/activity_home" />
+
+    <activity
+        android:id="@+id/scorecardActivity"
+        android:name="com.app.burdii.ScorecardActivity"
+        android:label="ScorecardActivity"
+        tools:layout="@layout/activity_scorecard" />
+
+    <fragment
+        android:id="@+id/seasonLeagueTrackerFragment"
+        android:name="com.app.burdii.SeasonLeagueTrackerFragment"
+        android:label="SeasonLeagueTrackerFragment"
+        tools:layout="@layout/fragment_season_league_tracker" >
+        <action
+            android:id="@+id/action_seasonLeagueTrackerFragment_to_leagueOptionsFragment"
+            app:destination="@id/leagueOptionsFragment"
+            app:popUpTo="@id/seasonLeagueTrackerFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/leagueResultsFragment"
+        android:name="com.app.burdii.LeagueResultsFragment"
+        android:label="LeagueResultsFragment"
+        tools:layout="@layout/fragment_league_results" >
+        <action
+            android:id="@+id/action_leagueResultsFragment_to_seasonLeagueTrackerFragment"
+            app:destination="@id/seasonLeagueTrackerFragment"
+            app:popUpTo="@id/homeActivity"
+            app:popUpToInclusive="false"/>
+    </fragment>
+
+    <action android:id="@+id/action_homeActivity_to_scorecardActivity" app:destination="@id/scorecardActivity" />
+    <action android:id="@+id/action_homeActivity_to_leagueOptionsFragment" app:destination="@id/leagueOptionsFragment" />
+    <action android:id="@+id/action_homeActivity_to_seasonLeagueTrackerFragment" app:destination="@id/seasonLeagueTrackerFragment" />
+
+    <fragment
+        android:id="@+id/leagueOptionsFragment"
+        android:name="com.app.burdii.LeagueOptionsFragment"
+        android:label="LeagueOptionsFragment"
+        tools:layout="@layout/fragment_league_options" >
+        <action
+            android:id="@+id/action_leagueOptionsFragment_to_leaguePlayersFragment"
+            app:destination="@id/leaguePlayersFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/leaguePlayersFragment"
+        android:name="com.app.burdii.LeaguePlayersFragment"
+        android:label="LeaguePlayersFragment"
+        tools:layout="@layout/fragment_league_players" >
+        <action
+            android:id="@+id/action_leaguePlayersFragment_to_scoreEntryByHoleFragment"
+            app:destination="@id/scoreEntryByHoleFragment" />
+        <action
+            android:id="@+id/action_leaguePlayersFragment_to_scoreEntryFinalScoreFragment"
+            app:destination="@id/scoreEntryFinalScoreFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/scoreEntryByHoleFragment"
+        android:name="com.app.burdii.ScoreEntryByHoleFragment"
+        android:label="ScoreEntryByHoleFragment"
+        tools:layout="@layout/fragment_score_entry_by_hole" >
+        <action
+            android:id="@+id/action_scoreEntryByHoleFragment_to_leagueResultsFragment"
+            app:destination="@id/leagueResultsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/scoreEntryFinalScoreFragment"
+        android:name="com.app.burdii.ScoreEntryFinalScoreFragment"
+        android:label="ScoreEntryFinalScoreFragment"
+        tools:layout="@layout/fragment_score_entry_final_score" >
+        <action
+            android:id="@+id/action_scoreEntryFinalScoreFragment_to_leagueResultsFragment"
+            app:destination="@id/leagueResultsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/leagueResultsFragment"
+        android:name="com.app.burdii.LeagueResultsFragment"
+        android:label="LeagueResultsFragment"
+        tools:layout="@layout/fragment_league_results" >
+        <action
+            android:id="@+id/action_leagueResultsFragment_to_seasonLeagueTrackerFragment"
+            app:destination="@id/seasonLeagueTrackerFragment"
+            app:popUpTo="@id/homeActivity"
+            app:popUpToInclusive="false"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/seasonLeagueTrackerFragment"
+        android:name="com.app.burdii.SeasonLeagueTrackerFragment"
+        android:label="SeasonLeagueTrackerFragment"
+        tools:layout="@layout/fragment_season_league_tracker" >
+        <action
+            android:id="@+id/action_seasonLeagueTrackerFragment_to_leagueOptionsFragment"
+            app:destination="@id/leagueOptionsFragment"
+            app:popUpTo="@id/seasonLeagueTrackerFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <action android:id="@+id/action_homeActivity_to_scorecardActivity" app:destination="@id/scorecardActivity" />
+    <action android:id="@+id/action_homeActivity_to_leagueOptionsFragment" app:destination="@id/leagueOptionsFragment" />
+    <action android:id="@+id/action_homeActivity_to_seasonLeagueTrackerFragment" app:destination="@id/seasonLeagueTrackerFragment" />
+
+</navigation>
