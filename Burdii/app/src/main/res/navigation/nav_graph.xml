@@ -9,7 +9,14 @@
         android:id="@+id/homeActivity"
         android:name="com.app.burdii.HomeActivity"
         android:label="HomeActivity"
-        tools:layout="@layout/activity_home" />
+        tools:layout="@layout/activity_home" >
+        <action android:id="@+id/action_homeActivity_to_scorecardActivity" app:destination="@id/scorecardActivity" />
+        <action android:id="@+id/action_homeActivity_to_leagueOptionsFragment" app:destination="@id/leagueOptionsFragment" />
+        <action android:id="@+id/action_homeActivity_to_seasonLeagueTrackerFragment" app:destination="@id/seasonLeagueTrackerFragment" />
+        <action android:id="@+id/action_homeActivity_to_createLeagueFragment" app:destination="@id/createLeagueFragment" />
+        <action android:id="@+id/action_homeActivity_to_joinLeagueFragment" app:destination="@id/joinLeagueFragment" />
+        <action android:id="@+id/action_homeActivity_to_myLeaguesFragment" app:destination="@id/myLeaguesFragment" />
+    </activity>
 
     <activity
         android:id="@+id/scorecardActivity"
@@ -40,10 +47,6 @@
             app:popUpTo="@id/homeActivity"
             app:popUpToInclusive="false"/>
     </fragment>
-
-    <action android:id="@+id/action_homeActivity_to_scorecardActivity" app:destination="@id/scorecardActivity" />
-    <action android:id="@+id/action_homeActivity_to_leagueOptionsFragment" app:destination="@id/leagueOptionsFragment" />
-    <action android:id="@+id/action_homeActivity_to_seasonLeagueTrackerFragment" app:destination="@id/seasonLeagueTrackerFragment" />
 
     <fragment
         android:id="@+id/leagueOptionsFragment"
@@ -89,31 +92,48 @@
     </fragment>
 
     <fragment
-        android:id="@+id/leagueResultsFragment"
-        android:name="com.app.burdii.LeagueResultsFragment"
-        android:label="LeagueResultsFragment"
-        tools:layout="@layout/fragment_league_results" >
+        android:id="@+id/createLeagueFragment"
+        android:name="com.app.burdii.ui.league.CreateLeagueFragment"
+        android:label="CreateLeagueFragment"
+        tools:layout="@layout/fragment_create_league" />
+
+    <fragment
+        android:id="@+id/joinLeagueFragment"
+        android:name="com.app.burdii.ui.league.JoinLeagueFragment"
+        android:label="JoinLeagueFragment"
+        tools:layout="@layout/fragment_join_league" />
+
+    <fragment
+        android:id="@+id/myLeaguesFragment"
+        android:name="com.app.burdii.ui.league.MyLeaguesFragment"
+        android:label="MyLeaguesFragment"
+        tools:layout="@layout/fragment_my_leagues" >
         <action
-            android:id="@+id/action_leagueResultsFragment_to_seasonLeagueTrackerFragment"
-            app:destination="@id/seasonLeagueTrackerFragment"
-            app:popUpTo="@id/homeActivity"
-            app:popUpToInclusive="false"/>
+            android:id="@+id/action_myLeaguesFragment_to_leagueDetailsFragment"
+            app:destination="@id/leagueDetailsFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/seasonLeagueTrackerFragment"
-        android:name="com.app.burdii.SeasonLeagueTrackerFragment"
-        android:label="SeasonLeagueTrackerFragment"
-        tools:layout="@layout/fragment_season_league_tracker" >
+        android:id="@+id/leagueDetailsFragment"
+        android:name="com.app.burdii.ui.league.LeagueDetailsFragment"
+        android:label="LeagueDetailsFragment"
+        tools:layout="@layout/fragment_league_details" >
+        <argument
+            android:name="leagueId"
+            app:argType="string" />
         <action
-            android:id="@+id/action_seasonLeagueTrackerFragment_to_leagueOptionsFragment"
-            app:destination="@id/leagueOptionsFragment"
-            app:popUpTo="@id/seasonLeagueTrackerFragment"
-            app:popUpToInclusive="true"/>
+            android:id="@+id/action_leagueDetailsFragment_to_manageScoresFragment"
+            app:destination="@id/manageScoresFragment" />
     </fragment>
 
-    <action android:id="@+id/action_homeActivity_to_scorecardActivity" app:destination="@id/scorecardActivity" />
-    <action android:id="@+id/action_homeActivity_to_leagueOptionsFragment" app:destination="@id/leagueOptionsFragment" />
-    <action android:id="@+id/action_homeActivity_to_seasonLeagueTrackerFragment" app:destination="@id/seasonLeagueTrackerFragment" />
+    <fragment
+        android:id="@+id/manageScoresFragment"
+        android:name="com.app.burdii.ui.league.ManageScoresFragment"
+        android:label="ManageScoresFragment"
+        tools:layout="@layout/fragment_manage_scores" >
+        <argument
+            android:name="leagueId"
+            app:argType="string" />
+    </fragment>
 
 </navigation>

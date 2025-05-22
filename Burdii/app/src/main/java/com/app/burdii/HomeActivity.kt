@@ -24,12 +24,17 @@ import com.google.gson.reflect.TypeToken
 class HomeActivity : AppCompatActivity() {
     private lateinit var recentRoundsRecyclerView: RecyclerView
     private lateinit var roundScorecardButton: MaterialButton
-    private lateinit var leagueScorecardButton: MaterialButton
-    private lateinit var seasonLeagueTrackerButton: MaterialButton
+    // Removed duplicate references for leagueScorecardButton and seasonLeagueTrackerButton
+    private lateinit var myLeaguesButton: MaterialButton
+    private lateinit var createLeagueButton: MaterialButton
+    private lateinit var joinLeagueButton: MaterialButton
+
     private lateinit var clearButton: Button
+    // Removed upgradeButton reference - handle visibility based on pro status later
+
     private lateinit var adapter: RoundAdapter
     private var roundsList = mutableListOf<Round>()
-    
+
     // --- SharedPreferences Constants and Gson --- 
     private val PREFS_FILENAME = "com.app.burdii.prefs"
     private val ROUNDS_KEY = "rounds_history"
@@ -40,7 +45,7 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         supportActionBar?.hide() // Hide the action bar
         setContentView(R.layout.activity_home)
-        
+
         // Apply fade in animation
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, R.anim.fade_in, 0)
@@ -49,12 +54,26 @@ class HomeActivity : AppCompatActivity() {
             overridePendingTransition(R.anim.fade_in, 0)
         }
 
-        // Initialize views
-        // Removed startNewRoundButton and upgradeButton references
-        recentRoundsRecyclerView = findViewById(R.id.recentRoundsRecyclerView)
+        // Check sign-in status passed from SplashActivity
+        val isSignedIn = intent.getBooleanExtra("IS_SIGNED_IN", false)
 
+        // Initialize views
+        recentRoundsRecyclerView = findViewById(R.id.recentRoundsRecyclerView)
         clearButton = findViewById(R.id.clearButton)
-        
+
+        // Get references to the buttons
+        roundScorecardButton = findViewById(R.id.roundScorecardButton)
+        myLeaguesButton = findViewById(R.id.myLeaguesButton)
+        createLeagueButton = findViewById(R.id.createLeagueButton)
+        joinLeagueButton = findViewById(R.id.joinLeagueButton)
+        // upgradeButton = findViewById(R.id.upgradeButton)
+
+        // Set initial visibility of league buttons based on sign-in status
+        myLeaguesButton.visibility = if (isSignedIn) View.VISIBLE else View.GONE
+        createLeagueButton.visibility = if (isSignedIn) View.VISIBLE else View.GONE
+        joinLeagueButton.visibility = if (isSignedIn) View.VISIBLE else View.GONE
+        // TODO: Handle upgrade button visibility based on pro status
+
         // Load rounds from SharedPreferences instead of sample data
         roundsList = loadRounds().toMutableList()
 
@@ -63,14 +82,21 @@ class HomeActivity : AppCompatActivity() {
         recentRoundsRecyclerView.adapter = adapter
         recentRoundsRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Get references to the new buttons
-        roundScorecardButton = findViewById(R.id.roundScorecardButton)
-        leagueScorecardButton = findViewById(R.id.leagueScorecardButton)
-        seasonLeagueTrackerButton = findViewById(R.id.seasonLeagueTrackerButton)
-
         // Button click listeners
         roundScorecardButton.setOnClickListener {
             findNavController(R.id.nav_host_fragment).navigate(R.id.scorecardActivity)
+        }
+
+        myLeaguesButton.setOnClickListener { 
+             findNavController(R.id.nav_host_fragment).navigate(R.id.action_homeActivity_to_myLeaguesFragment)
+        }
+
+        createLeagueButton.setOnClickListener { 
+             findNavController(R.id.nav_host_fragment).navigate(R.id.action_homeActivity_to_createLeagueFragment)
+        }
+
+         joinLeagueButton.setOnClickListener { 
+             findNavController(R.id.nav_host_fragment).navigate(R.id.action_homeActivity_to_joinLeagueFragment)
         }
 
         clearButton.setOnClickListener {
@@ -87,7 +113,7 @@ class HomeActivity : AppCompatActivity() {
         editor.putString(ROUNDS_KEY, json)
         editor.apply() // Use apply for asynchronous saving
     }
-    
+
     private fun loadRounds(): List<Round> {
         val prefs: SharedPreferences = getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
         val json = prefs.getString(ROUNDS_KEY, null)
@@ -123,19 +149,21 @@ class HomeActivity : AppCompatActivity() {
     private fun clearHistory() {
         // Clear persistent storage
         saveRounds(listOf()) // Save an empty list
-        
+
         // Clear in-memory list and update UI
         roundsList.clear()
         adapter.notifyDataSetChanged()
         Toast.makeText(this, "History Cleared", Toast.LENGTH_SHORT).show()
     }
-    
+
     override fun onResume() {
         super.onResume()
         // Load rounds and update adapter in case of changes from other activities
         roundsList.clear()
         roundsList.addAll(loadRounds())
         adapter.notifyDataSetChanged()
+
+        // Optional: Re-check sign-in status on resume if needed, but observing Auth state is better
     }
 
     /**
