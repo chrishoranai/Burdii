@@ -32,7 +32,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var clearButton: Button
     // Removed upgradeButton reference - handle visibility based on pro status later
 
-    private lateinit var adapter: RoundAdapter
+    private lateinit var adapter: RecentRoundsAdapter
     private var roundsList = mutableListOf<Round>()
 
     // --- SharedPreferences Constants and Gson --- 
@@ -78,7 +78,7 @@ class HomeActivity : AppCompatActivity() {
         roundsList = loadRounds().toMutableList()
 
         // Set up RecyclerView with adapter and click handling
-        adapter = RoundAdapter(roundsList) { round -> onRoundSelected(round) }
+        adapter = RecentRoundsAdapter(roundsList) { round -> onRoundSelected(round) }
         recentRoundsRecyclerView.adapter = adapter
         recentRoundsRecyclerView.layoutManager = LinearLayoutManager(this)
 

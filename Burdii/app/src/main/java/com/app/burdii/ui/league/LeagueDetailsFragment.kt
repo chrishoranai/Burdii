@@ -5,15 +5,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.app.burdii.R
 import com.app.burdii.databinding.FragmentLeagueDetailsBinding
-
-// You'll likely need adapters for members and scores:
-// import com.app.burdii.ui.adapters.MemberAdapter
-// import com.app.burdii.ui.adapters.LeagueScoreAdapter
+import com.app.burdii.ui.adapters.MemberAdapter
+import com.app.burdii.ui.adapters.LeagueScoreAdapter
 
 class LeagueDetailsFragment : Fragment() {
 
@@ -23,8 +24,8 @@ class LeagueDetailsFragment : Fragment() {
     private val viewModel: LeagueDetailsViewModel by viewModels()
     private val args: LeagueDetailsFragmentArgs by navArgs()
 
-    // private lateinit var memberAdapter: MemberAdapter // Uncomment and use your adapter
-    // private lateinit var leagueScoreAdapter: LeagueScoreAdapter // Uncomment and use your adapter
+    private lateinit var memberAdapter: MemberAdapter
+    private lateinit var leagueScoreAdapter: LeagueScoreAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,18 +39,36 @@ class LeagueDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Setup RecyclerViews (Uncomment and replace with your actual adapters)
-//        memberAdapter = MemberAdapter { member ->
-//            // Handle member click if needed
-//        }
-//        binding.membersRecyclerView.layoutManager = LinearLayoutManager(context)
-//        binding.membersRecyclerView.adapter = memberAdapter
-//
-//        leagueScoreAdapter = LeagueScoreAdapter { score ->
-//            // Handle score click if needed (e.g., for editing if user is host)
-//        }
-//        binding.scoresRecyclerView.layoutManager = LinearLayoutManager(context)
-//        binding.scoresRecyclerView.adapter = leagueScoreAdapter
+        // Setup RecyclerViews
+        memberAdapter = MemberAdapter { member ->
+            // Handle member click if needed
+        }
+        binding.membersRecyclerView.layoutManager = LinearLayoutManager(context)
+        binding.membersRecyclerView.adapter = memberAdapter
+
+        leagueScoreAdapter = LeagueScoreAdapter { score ->
+            // Handle score click if needed
+        }
+        binding.scoresRecyclerView.layoutManager = LinearLayoutManager(context)
+        binding.scoresRecyclerView.adapter = leagueScoreAdapter
+        
+        // Setup button listeners
+        binding.submitScoreButton.setOnClickListener {
+            findNavController().navigate(
+                R.id.action_leagueDetailsFragment_to_submitScoreFragment,
+                bundleOf("leagueId" to args.leagueId)
+            )
+        }
+        
+        binding.manageScoresButton.setOnClickListener {
+            findNavController().navigate(
+                R.id.action_leagueDetailsFragment_to_manageScoresFragment,
+                bundleOf("leagueId" to args.leagueId)
+            )
+        }
+        
+        // Load league details
+        viewModel.loadLeagueDetails(args.leagueId)
 
         viewModel.league.observe(viewLifecycleOwner) {
             it?.let {
@@ -58,14 +77,23 @@ class LeagueDetailsFragment : Fragment() {
                 binding.weeksTextView.text = "Weeks: ${it.numberOfWeeks}"
                 binding.accessCodeTextView.text = "Access Code: ${it.accessCode}"
 
-                // Update members list (Uncomment when adapter is ready)
-                // memberAdapter.submitList(it.members.map { memberUid -> it.memberNames[memberUid] ?: memberUid }) // Using memberNames map
+                // Update members list
+                val membersList = it.members.map { memberUid -> 
+                    it.memberNames[memberUid] ?: "Unknown User"
+                }
+                memberAdapter.submitList(membersList)
+                
+                // Show/hide manage button based on if user is host
+                viewModel.isCurrentUserHost.observe(viewLifecycleOwner) { isHost ->
+                    binding.manageScoresButton.visibility = if (isHost) View.VISIBLE else View.GONE
+                }
             }
         }
 
         viewModel.scores.observe(viewLifecycleOwner) {
-            // Update scores list (Uncomment when adapter is ready)
-            // leagueScoreAdapter.submitList(it)
+            leagueScoreAdapter.submitList(it)
+            binding.scoresEmptyView.visibility = if (it.isEmpty()) View.VISIBLE else View.GONE
+            binding.scoresRecyclerView.visibility = if (it.isEmpty()) View.GONE else View.VISIBLE
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) {
@@ -75,13 +103,9 @@ class LeagueDetailsFragment : Fragment() {
         viewModel.errorMessage.observe(viewLifecycleOwner) {
             it?.let {
                 Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-                viewModel._errorMessage.value = null // Consume the error message
+                viewModel.clearErrorMessage()
             }
         }
-
-        // You'll need to implement logic here to show/hide UI elements based on
-        // whether the current user is the host of the league (e.g., manage scores button).
-        // You can potentially get the current user ID from the repository and compare it to league.hostId
     }
 
     override fun onDestroyView() {

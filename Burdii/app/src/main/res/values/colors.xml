@@ -10,6 +10,7 @@
     <color name="backgroundMint">#E8F5E9</color>
     <color name="backgroundCard">#FFFFFF</color>
     <color name="burdii_card_background_off_white">#FAFAFA</color>
+    <color name="burdii_background_off_white">#F5F5F5</color>
     
     <!-- Text colors -->
     <color name="textPrimary">#212121</color>

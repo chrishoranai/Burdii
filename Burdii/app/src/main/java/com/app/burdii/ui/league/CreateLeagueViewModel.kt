@@ -4,12 +4,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.burdii.data.firebase.FirebaseLeagueRepository
+import com.app.burdii.data.models.firebase.League
+import com.app.burdii.data.repositories.FirebaseLeagueRepository
 import kotlinx.coroutines.launch
 
 class CreateLeagueViewModel : ViewModel() {
 
-    private val repository = FirebaseLeagueRepository.getInstance()
+    private val repository = FirebaseLeagueRepository()
 
     private val _creationStatus = MutableLiveData<CreationStatus>()
     val creationStatus: LiveData<CreationStatus> = _creationStatus
@@ -25,10 +26,29 @@ class CreateLeagueViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
-            val result = repository.createLeague(leagueName, numWeeksInt)
+            val currentUserId = repository.getCurrentUserId()
+            val currentUserName = repository.getCurrentUserDisplayName()
+            
+            if (currentUserId == null || currentUserName == null) {
+                _creationStatus.value = CreationStatus.Error("User not authenticated.")
+                return@launch
+            }
+            
+            val league = League(
+                name = leagueName,
+                hostId = currentUserId,
+                hostName = currentUserName,
+                numberOfWeeks = numWeeksInt,
+                members = listOf(currentUserId),
+                memberNames = mapOf(currentUserId to currentUserName)
+            )
+            
+            val result = repository.createLeagueWithCode(league)
             if (result.isSuccess) {
-                val (leagueId, accessCode) = result.getOrThrow()
-                _creationStatus.value = CreationStatus.Success(leagueId, accessCode)
+                val leagueId = result.getOrNull()
+                // Get the access code from the created league
+                val createdLeague = repository.getLeague(leagueId ?: "").getOrNull()
+                _creationStatus.value = CreationStatus.Success(leagueId, createdLeague?.accessCode)
             } else {
                 _creationStatus.value = CreationStatus.Error(result.exceptionOrNull()?.message ?: "Unknown error creating league.")
             }

@@ -3,7 +3,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:background="@color/backgroundMint">
+
+    <TextView
+        android:id="@+id/roundNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Round Name"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/textPrimary"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="8dp" />
 
     <TextView
         android:id="@+id/finalScoreTitle"
@@ -11,13 +23,32 @@
         android:layout_height="wrap_content"
         android:text="Final Scores"
         android:textSize="20sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:textColor="@color/textPrimary"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp" />
 
-    <TableLayout
-        android:id="@+id/finalScoreTable"
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <TableLayout
+            android:id="@+id/finalScoreTable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*"
+            android:background="@color/backgroundCard"
+            android:elevation="2dp" />
+    </ScrollView>
+
+    <Button
+        android:id="@+id/backButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:stretchColumns="*"
-        android:layout_marginTop="16dp" />
+        android:text="Back to Home"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/textLight" />
 
 </LinearLayout>

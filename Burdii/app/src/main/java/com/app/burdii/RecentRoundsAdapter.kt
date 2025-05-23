@@ -12,10 +12,10 @@ import com.app.burdii.Round
  * @param rounds list of rounds to display
  * @param onRoundClicked callback invoked when a round is selected
  */
-class RoundAdapter(
+class RecentRoundsAdapter(
     private val rounds: List<Round>,
     private val onRoundClicked: (Round) -> Unit = {}
-) : RecyclerView.Adapter<RoundAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<RecentRoundsAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val nameTextView: TextView = view.findViewById(R.id.nameTextView)

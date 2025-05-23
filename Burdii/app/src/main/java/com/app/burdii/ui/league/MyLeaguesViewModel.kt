@@ -4,13 +4,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.burdii.data.firebase.FirebaseLeagueRepository
+import com.app.burdii.data.repositories.FirebaseLeagueRepository
 import com.app.burdii.data.models.firebase.League
 import kotlinx.coroutines.launch
 
 class MyLeaguesViewModel : ViewModel() {
 
-    private val repository = FirebaseLeagueRepository.getInstance()
+    private val repository = FirebaseLeagueRepository()
 
     private val _hostedLeagues = MutableLiveData<List<League>>()
     val hostedLeagues: LiveData<List<League>> = _hostedLeagues
@@ -21,8 +21,12 @@ class MyLeaguesViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    private val _errorMessage = MutableLiveData<String?>()
+    val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
+    
+    fun clearErrorMessage() {
+        _errorMessage.value = null
+    }
 
     init {
         loadMyLeagues()

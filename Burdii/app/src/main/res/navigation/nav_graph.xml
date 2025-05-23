@@ -124,6 +124,9 @@
         <action
             android:id="@+id/action_leagueDetailsFragment_to_manageScoresFragment"
             app:destination="@id/manageScoresFragment" />
+        <action
+            android:id="@+id/action_leagueDetailsFragment_to_submitScoreFragment"
+            app:destination="@id/submitScoreFragment" />
     </fragment>
 
     <fragment
@@ -131,6 +134,16 @@
         android:name="com.app.burdii.ui.league.ManageScoresFragment"
         android:label="ManageScoresFragment"
         tools:layout="@layout/fragment_manage_scores" >
+        <argument
+            android:name="leagueId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/submitScoreFragment"
+        android:name="com.app.burdii.ui.league.SubmitScoreFragment"
+        android:label="SubmitScoreFragment"
+        tools:layout="@layout/fragment_submit_score" >
         <argument
             android:name="leagueId"
             app:argType="string" />

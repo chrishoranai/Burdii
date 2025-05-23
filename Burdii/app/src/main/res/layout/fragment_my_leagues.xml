@@ -1,46 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
+    android:background="@color/backgroundMint"
     tools:context=".ui.league.MyLeaguesFragment">
 
-    <TextView
+    <ScrollView
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="My Leagues"
+                android:textAppearance="?attr/textAppearanceHeadline5"
+                android:textColor="@color/textPrimary"
+                android:gravity="center"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Hosted Leagues"
+                android:textAppearance="?attr/textAppearanceHeadline6"
+                android:textColor="@color/textPrimary"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/hostedLeaguesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_league" />
+
+            <TextView
+                android:id="@+id/hostedLeaguesEmptyView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No hosted leagues yet"
+                android:textColor="@color/textSecondary"
+                android:gravity="center"
+                android:padding="16dp"
+                android:visibility="gone" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/textSecondary"
+                android:layout_marginVertical="16dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Joined Leagues"
+                android:textAppearance="?attr/textAppearanceHeadline6"
+                android:textColor="@color/textPrimary"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/joinedLeaguesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_league" />
+
+            <TextView
+                android:id="@+id/joinedLeaguesEmptyView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No joined leagues yet"
+                android:textColor="@color/textSecondary"
+                android:gravity="center"
+                android:padding="16dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="My Leagues"
-        android:textAppearance="?attr/textAppearanceHeadline5" />
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Hosted Leagues"
-        android:textAppearance="?attr/textAppearanceHeadline6" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/hostedLeaguesRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="8dp"
-        tools:listitem="@layout/item_league_result" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Joined Leagues"
-        android:textAppearance="?attr/textAppearanceHeadline6" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/joinedLeaguesRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="8dp"
-        tools:listitem="@layout/item_league_result" />
-
-</LinearLayout>
+</FrameLayout>

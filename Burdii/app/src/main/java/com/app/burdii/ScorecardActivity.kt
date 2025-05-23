@@ -5,9 +5,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Typeface
 import android.os.Bundle
-import android.speech.RecognizerIntent
-import android.speech.SpeechRecognizer
-import android.speech.tts.TextToSpeech
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -24,27 +21,28 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class ScorecardActivity : AppCompatActivity() {
+    companion object {
+        private const val TAG = "ScorecardActivity"
+    }
+    
     private lateinit var currentHoleTextView: TextView
     private lateinit var scorecardTable: TableLayout
- private lateinit var finishRoundButton: Button
+    private lateinit var finishRoundButton: Button
     private lateinit var nextHoleButton: ImageButton
     private lateinit var previousHoleButton: ImageButton
     private lateinit var previousHoleText: TextView
     private lateinit var nextHoleText: TextView
-    private lateinit var textToSpeech: TextToSpeech
-    private lateinit var speechRecognizer: SpeechRecognizer
     private var currentHole = 1
     private var currentPlayerIndex = 0
     private lateinit var playerNames: Array<String>
+    private var numPlayers: Int = 0
     private var numHoles: Int = 0
     private lateinit var parValues: IntArray
     private lateinit var scores: Array<IntArray>
     private lateinit var scoreEditTexts: Array<Array<EditText>>
     private lateinit var totalTextViews: Array<TextView>
-    private var isListeningForWakeWord = true
-    private var isAskingForScore = false
     private lateinit var scoringMethod: String
-    private lateinit var voiceRecognitionService: VoiceRecognitionService
+    private var roundName: String = "New Round"
 
     // --- SharedPreferences Constants and Gson --- 
     private val PREFS_FILENAME = "com.app.burdii.prefs"
@@ -65,7 +63,6 @@ class ScorecardActivity : AppCompatActivity() {
         nextHoleButton = findViewById(R.id.nextHoleButton)
         previousHoleText = findViewById(R.id.previousHoleText)
         nextHoleText = findViewById(R.id.nextHoleText)
-        micFeedbackCard.visibility = View.GONE
         
         // Setup button click listeners
         nextHoleButton.setOnClickListener {
@@ -81,13 +78,12 @@ class ScorecardActivity : AppCompatActivity() {
         }
 
         // Retrieve data from intent
-        numHoles = intent.getIntExtra("NUM_HOLES", 18) // Default to 18 if not found
-        val roundName = intent.getStringExtra("ROUND_NAME") ?: "New Round" // Default if not found
-        playerNames = intent.getStringArrayExtra("PLAYER_NAMES") ?: arrayOf("Player 1") // Default if not found
-        numPlayers = playerNames.size // Get numPlayers from the array size
- parValues = intent.getIntArrayExtra("PAR_VALUES") ?: IntArray(numHoles) { 3 } // Default par 3 if not found
-        scoringMethod = intent.getStringExtra("SCORING_METHOD") ?: "MANUAL" // Default to MANUAL
-        Log.d(TAG, "onCreate: intent extra 'SCORING_METHOD': $scoringMethod")
+        numHoles = intent.getIntExtra("NUM_HOLES", 18)
+        roundName = intent.getStringExtra("ROUND_NAME") ?: "New Round"
+        playerNames = intent.getStringArrayExtra("PLAYER_NAMES") ?: arrayOf("Player 1")
+        numPlayers = playerNames.size
+        parValues = intent.getIntArrayExtra("PAR_VALUES") ?: IntArray(numHoles) { 3 }
+        scoringMethod = intent.getStringExtra("SCORING_METHOD") ?: "MANUAL"
         Log.d(TAG, "onCreate: Effective scoringMethod after default: $scoringMethod")
 
         // Initialize scores and UI arrays
@@ -114,10 +110,8 @@ class ScorecardActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        // Stop voice recognition if active
-        if (::voiceRecognitionService.isInitialized) {
-            voiceRecognitionService.stopListeningForWakeWord()
-        }
+        // Save current scores when pausing
+        saveCurrentScores()
     }
     
     /**
@@ -340,82 +334,85 @@ class ScorecardActivity : AppCompatActivity() {
         totalTextViews[playerIndex].text = total.toString()
     }
     
+    
     /**
-     * Initialize the voice recognition service
+     * Finish round and save data
      */
-    private fun startVoiceRecognitionService() {
-        // Initialize voice recognition service with callbacks
-        voiceRecognitionService = VoiceRecognitionService(
-            context = this,
-            onScoresConfirmed = { playerScores, holeNum ->
-                // Handle score confirmation from voice
-                Log.d(TAG, "Voice scores confirmed for hole $holeNum: $playerScores")
-                
-                // Update the UI with scores
-                runOnUiThread {
-                    playerScores.forEach { (playerName, score) ->
-                        // Find the player index from the name
-                        val playerIndex = playerNames.indexOfFirst { it.equals(playerName, ignoreCase = true) }
-                        
-                        // Update the score if player found
-                        if (playerIndex >= 0 && playerIndex < numPlayers) {
-                            val holeIndex = currentHole - 1
-                            scores[playerIndex][holeIndex] = score
-                            scoreEditTexts[playerIndex][holeIndex].setText(score.toString())
-                            updateTotalScore(playerIndex)
-                        }
-                    }
-                }
-            },
-            onStateChanged = { state, message ->
-                // Update UI based on voice recognition state
-                runOnUiThread {
-                    when (state) {
-                        VoiceRecognitionService.VoiceState.ACTIVATION_STATE -> {
-                            voiceStatusTextView.text = "Listening for 'Hey Birdie'"
-                            micFeedbackCard.visibility = View.GONE
-                        }
-                        VoiceRecognitionService.VoiceState.SCORE_INQUIRY_STATE, 
-                        VoiceRecognitionService.VoiceState.SCORE_INPUT_PROCESSING -> {
-                            voiceStatusTextView.text = message
-                            micFeedbackCard.visibility = View.VISIBLE
-                        }
-                        VoiceRecognitionService.VoiceState.CONFIRMATION_STATE,
-                        VoiceRecognitionService.VoiceState.CONFIRMATION_HANDLING -> {
-                            voiceStatusTextView.text = message
-                            micFeedbackCard.visibility = View.VISIBLE
-                        }
-                        VoiceRecognitionService.VoiceState.ERROR_STATE -> {
-                            voiceStatusTextView.text = "Error: $message"
-                            micFeedbackCard.visibility = View.VISIBLE
-                            // Reset after showing error briefly
-                            handler.postDelayed({
-                                voiceStatusTextView.text = "Listening for 'Hey Birdie'"
-                                micFeedbackCard.visibility = View.GONE
-                            }, 3000)
-                        }
-                    }
+    private fun finishRound() {
+        // Save current scores first
+        saveCurrentScores()
+        
+        // Create round object to save
+        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        val currentDate = dateFormat.format(Date())
+        
+        // Calculate total scores and determine winner
+        val totalScores = mutableListOf<Pair<String, Int>>()
+        for (playerIndex in 0 until numPlayers) {
+            var total = 0
+            var holesCompleted = 0
+            for (holeIndex in 0 until numHoles) {
+                if (scores[playerIndex][holeIndex] > 0) {
+                    total += scores[playerIndex][holeIndex]
+                    holesCompleted++
                 }
             }
+            totalScores.add(Pair(playerNames[playerIndex], total))
+        }
+        
+        // Find the best score (lowest in golf)
+        val bestScore = totalScores.minByOrNull { it.second }
+        val scoreChangeText = if (bestScore != null) "${bestScore.first}: ${bestScore.second}" else "No scores"
+        val holesPlayedText = "$numHoles holes"
+        
+        // Create round object
+        val round = Round(
+            name = roundName,
+            date = currentDate,
+            scoreChange = scoreChangeText,
+            holesPlayed = holesPlayedText,
+            isComplete = true,
+            currentHole = numHoles
         )
         
-        // Set the initial hole number
-        voiceRecognitionService.setCurrentHoleNumber(currentHole)
+        // Save to SharedPreferences
+        saveRoundToHistory(round)
         
-        // Start listening for wake word
-        voiceRecognitionService.startListeningForWakeWord()
-        
-        // Show the voice status card
-        voiceStatusCard.visibility = View.VISIBLE
-        voiceStatusTextView.text = "Listening for 'Hey Birdie'"
+        // Navigate to final score activity
+        val intent = Intent(this, FinalScoreActivity::class.java)
+        intent.putExtra("ROUND_NAME", roundName)
+        intent.putExtra("PLAYER_NAMES", playerNames)
+        intent.putExtra("SCORES", scores.map { it.toList().toIntArray() }.toTypedArray())
+        intent.putExtra("PAR_VALUES", parValues)
+        intent.putExtra("NUM_HOLES", numHoles)
+        startActivity(intent)
+        finish()
     }
     
     /**
-     * Finish round and save data to be implemented
+     * Save round to history in SharedPreferences
      */
-    private fun finishRound() {
-        // Basic placeholder implementation
-        Toast.makeText(this, "Round finished!", Toast.LENGTH_SHORT).show()
-        finish()
+    private fun saveRoundToHistory(round: Round) {
+        val prefs: SharedPreferences = getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
+        val json = prefs.getString(ROUNDS_KEY, null)
+        val type = object : TypeToken<MutableList<Round>>() {}.type
+        val rounds: MutableList<Round> = if (json != null) {
+            try {
+                gson.fromJson(json, type)
+            } catch (e: Exception) {
+                mutableListOf()
+            }
+        } else {
+            mutableListOf()
+        }
+        
+        // Add new round at the beginning
+        rounds.add(0, round)
+        
+        // Save updated list
+        val editor = prefs.edit()
+        val updatedJson = gson.toJson(rounds)
+        editor.putString(ROUNDS_KEY, updatedJson)
+        editor.apply()
     }
 }

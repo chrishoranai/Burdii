@@ -2,50 +2,63 @@ package com.app.burdii.ui.league
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.app.burdii.data.firebase.FirebaseLeagueRepository
 import com.app.burdii.data.models.firebase.League
 import com.app.burdii.data.models.firebase.LeagueScore
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
+import com.app.burdii.data.repositories.FirebaseLeagueRepository
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
-class LeagueDetailsViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
+class LeagueDetailsViewModel : ViewModel() {
 
-    private val repository = FirebaseLeagueRepository.getInstance()
-    private val leagueId: String = savedStateHandle["leagueId"] ?: throw IllegalArgumentException("leagueId is required")
-
-    val league: LiveData<League?> = repository.getLeagueDetailsFlow(leagueId).asLiveData()
-
-    val scores: LiveData<List<LeagueScore>> = repository.getScoresForLeagueFlow(leagueId).asLiveData()
-
-    // You might want to expose members separately if you need a different adapter
-    val members: LiveData<List<String>> = league.asLiveData().map {
-        it?.members ?: emptyList()
-    }
+    private val repository = FirebaseLeagueRepository()
     
-    // Example of combining data if needed
-//    val leagueDetailsWithScores: LiveData<Pair<League?, List<LeagueScore>>> = combine(league, scores) { league, scores ->
-//        Pair(league, scores)
-//    }.asLiveData()
+    private val _league = MutableLiveData<League?>()
+    val league: LiveData<League?> = _league
+    
+    private val _scores = MutableLiveData<List<LeagueScore>>()
+    val scores: LiveData<List<LeagueScore>> = _scores
+    
+    private val _isCurrentUserHost = MutableLiveData<Boolean>()
+    val isCurrentUserHost: LiveData<Boolean> = _isCurrentUserHost
 
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
-    private val _errorMessage = MutableLiveData<String?>()
+    val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
-
-    // You'll likely need more ViewModel functions here for actions like:
-    // - Navigating to Manage Scores (if host)
-    // - Submitting a score (if member)
-    // - Inviting players (if host)
+    
+    fun clearErrorMessage() {
+        _errorMessage.value = null
+    }
+    
+    fun loadLeagueDetails(leagueId: String) {
+        _isLoading.value = true
+        
+        viewModelScope.launch {
+            // Load league details
+            val leagueResult = repository.getLeague(leagueId)
+            if (leagueResult.isSuccess) {
+                val league = leagueResult.getOrNull()
+                _league.value = league
+                
+                // Check if current user is host
+                val currentUserId = repository.getCurrentUserId()
+                _isCurrentUserHost.value = currentUserId != null && currentUserId == league?.hostId
+            } else {
+                _errorMessage.value = "Failed to load league details"
+            }
+            
+            // Load scores
+            viewModelScope.launch {
+                repository.getScoresForLeagueFlow(leagueId).asLiveData().observeForever { scoresList ->
+                    _scores.value = scoresList
+                }
+            }
+            
+            _isLoading.value = false
+        }
+    }
 }
